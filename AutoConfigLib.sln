@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoConfigLib", "AutoConfigLib\AutoConfigLib.csproj", "{35401AC8-264B-44E7-9A47-000C8A4E5E69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeBuild", "ZZCakeBuild\CakeBuild.csproj", "{8EF2E542-BCB5-4F95-A6CD-6D4A5FB7DF57}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{35401AC8-264B-44E7-9A47-000C8A4E5E69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35401AC8-264B-44E7-9A47-000C8A4E5E69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35401AC8-264B-44E7-9A47-000C8A4E5E69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35401AC8-264B-44E7-9A47-000C8A4E5E69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EF2E542-BCB5-4F95-A6CD-6D4A5FB7DF57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EF2E542-BCB5-4F95-A6CD-6D4A5FB7DF57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EF2E542-BCB5-4F95-A6CD-6D4A5FB7DF57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EF2E542-BCB5-4F95-A6CD-6D4A5FB7DF57}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
