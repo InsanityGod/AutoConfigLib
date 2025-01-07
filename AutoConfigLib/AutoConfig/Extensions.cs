@@ -7,14 +7,21 @@ namespace AutoConfigLib.AutoConfig
     {
         public static T GetValue<T>(this MemberInfo memberInfo, object instance)
         {
-            if (memberInfo is PropertyInfo property)
+            try
             {
-                return (T)property.GetValue(instance);
-            }
+                if (memberInfo is PropertyInfo property)
+                {
+                    return (T)property.GetValue(instance);
+                }
 
-            if (memberInfo is FieldInfo field)
+                if (memberInfo is FieldInfo field)
+                {
+                    return (T)field.GetValue(instance);
+                }
+            }
+            catch
             {
-                return (T)field.GetValue(instance);
+                //Something is going wrong here
             }
 
             return default;
@@ -22,14 +29,21 @@ namespace AutoConfigLib.AutoConfig
 
         public static void SetValue<T>(this MemberInfo memberInfo, object instance, T value)
         {
-            if (memberInfo is PropertyInfo property)
+            try
             {
-                property.SetValue(instance, value);
-            }
+                if (memberInfo is PropertyInfo property && property.CanWrite)
+                {
+                    property.SetValue(instance, value);
+                }
 
-            if (memberInfo is FieldInfo field)
+                if (memberInfo is FieldInfo field && !field.IsLiteral)
+                {
+                    field.SetValue(instance, value);
+                }
+            }
+            catch
             {
-                field.SetValue(instance, value);
+                //Something is going wrong here
             }
         }
     }

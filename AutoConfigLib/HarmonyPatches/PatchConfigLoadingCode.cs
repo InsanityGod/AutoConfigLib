@@ -13,7 +13,9 @@ namespace AutoConfigLib.HarmonyPatches
     {
         public static void PatchConfigStuff(ICoreAPI api, Harmony harmony)
         {
-            var modAssemblies = api.ModLoader.Mods.Select(mod => mod.Systems.First().GetType().Assembly)
+            var modAssemblies = api.ModLoader.Mods
+                .Where(mod => mod.Systems.Count > 0)
+                .Select(mod => mod.Systems.First().GetType().Assembly)
                 .Where(assembly => !Array.Exists(assembly.GetReferencedAssemblies(), assembly => assembly.Name == typeof(ConfigLibModSystem).Assembly.GetName().Name))
                 .Select(assembly => (assembly, AssemblyDefinition.ReadAssembly(assembly.Location)));
 
@@ -42,7 +44,7 @@ namespace AutoConfigLib.HarmonyPatches
                                             var realMethod = realMethods.FirstOrDefault();
                                             if (realMethods.Count != 1)
                                             {
-                                                //TODO
+                                                api.Logger.Warning($"Failed to bind AutoConfig for {assembly.GetName()} in method '{method.FullName}'");
                                                 break;
                                             }
 

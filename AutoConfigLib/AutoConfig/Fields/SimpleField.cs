@@ -46,7 +46,7 @@ namespace AutoConfigLib.AutoConfig.Fields
             typeof(string),
         };
 
-        //TODO Enabled ending should be dropdown maybe?
+        //TODO Enabled/Disabled ending should be dropdown maybe?
         public static unsafe T TryAddType<T>(string id, T value, out bool success)
         {
             success = true;
@@ -93,7 +93,6 @@ namespace AutoConfigLib.AutoConfig.Fields
                             value = (T)(object)null;
                         }
 
-                        //TODO: maybe throw warning or exception if we have false here because it shouldn't be possible
                         success = (bool)arguments[2];
                     }
 
@@ -134,7 +133,8 @@ namespace AutoConfigLib.AutoConfig.Fields
                 var stringValue = (string)(object)value;
                 bool wasNull = stringValue == null;
                 if(wasNull) stringValue = string.Empty;
-                ImGui.InputText(id, ref stringValue, 128); //TODO: test and maybe warning if existing string is already longer?
+
+                ImGui.InputText(id, ref stringValue, AutoConfigLibModSystem.Config.MaxStringLength);
                 value = (string.IsNullOrEmpty(stringValue) && wasNull) ?
                     (T)(object)null :
                     (T)(object)stringValue;
@@ -153,17 +153,8 @@ namespace AutoConfigLib.AutoConfig.Fields
                 success = false;
                 return value;
             }
-            //TODO: find out why IMGui is so weirdly responsive
+            //TODO: support for NatFloat
 
-            //TODO:
-            //else if (typeof(V) == typeof(NatFloat))
-            //{
-            //    
-            //    //NatFloat customValue = value as NatFloat;
-            //    //customValue.avg = OnInputFloat($"##avg-{row}" + key, customValue.avg, "avg");
-            //    //customValue.var = OnInputFloat($"##var-{row}" + key, customValue.var, "var");
-            //    //value = (V)Convert.ChangeType(customValue, typeof(NatFloat));
-            //}
             return value;
         }
 
@@ -187,7 +178,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                 newText.Append(str[i]);
             }
 
-            return newText.ToString();
+            return newText.Replace('_',' ').ToString();
         }
     }
 }

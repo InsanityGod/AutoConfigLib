@@ -4,17 +4,9 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Numerics;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using Vintagestory.API.Config;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
-using YamlDotNet.Core.Tokens;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AutoConfigLib.AutoConfig.Fields
 {
@@ -106,7 +98,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     }
                     else
                     {
-                        ImGui.Text($"Unsopported array element of type '{typeof(T)}'");
+                        ImGui.Text($"Unsupported array element of type '{typeof(T)}'");
                         //This array is a not supported type
                         ImGui.EndTable();
                         return array;
@@ -160,7 +152,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     ImGui.SetNextItemWidth(-1);
                     var newKey = SimpleField.TryAddType($"{id}-DictKey-{row}", key, out bool successKey);
 
-                    if (!successKey) ImGui.Text($"Unsopported dict value type '{typeof(K)}'");
+                    if (!successKey) ImGui.Text($"Unsupported dict value type '{typeof(K)}'");
 
                     if (successKey && !key.Equals(newKey))
                     {
@@ -173,10 +165,6 @@ namespace AutoConfigLib.AutoConfig.Fields
 
                             key = newKey;
                         }
-                        else
-                        {
-                            //TODO maybe we should swap keys/values in this case?
-                        }
                     }
                     ImGui.TableNextColumn();
                     
@@ -186,7 +174,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     if (!successValue) value = SimpleField.TryAddType($"{id}-DictValue-{row}-{key}", value, out successValue);
                     if (!successValue) value = ComplexField.TryAddType($"{id}-DictValue-{row}-{key}", "Value", value, out successValue);
                     //TODO: see if we can have the complex field use all that empty space on the left
-                    if (!successValue) ImGui.Text($"Unsopported dict value type '{typeof(V)}'");
+                    if (!successValue) ImGui.Text($"Unsupported dict value type '{typeof(V)}'");
 
                     dict[key] = value;
                     ImGui.TableNextColumn();
