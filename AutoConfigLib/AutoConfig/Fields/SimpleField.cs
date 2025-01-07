@@ -144,7 +144,6 @@ namespace AutoConfigLib.AutoConfig.Fields
                 var values = (T[])Enum.GetValues(typeof(T));
                 var keys = values.Select(item => GetHumanReadable(Enum.GetName(typeof(T), item))).ToArray();
                 var currentIndex = keys.IndexOf(GetHumanReadable(Enum.GetName(typeof(T), value)));
-
                 ImGui.Combo(id, ref currentIndex, keys, keys.Length);
 
                 value = (T)(object)values[currentIndex];

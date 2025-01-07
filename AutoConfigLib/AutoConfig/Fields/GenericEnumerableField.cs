@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AutoConfigLib.AutoConfig.Generators;
+using HarmonyLib;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -22,41 +23,69 @@ namespace AutoConfigLib.AutoConfig.Fields
 
         public static bool TryAdd(object instance, MemberInfo field, Type fieldType, string id)
         {
+            var arguments = new object[] { $"{id}-{field.Name}", field.Name, field.GetValue<object>(instance), null };
+
+            var result = AccessTools.Method(typeof(GenericEnumerableField), nameof(TryAddType))
+                .MakeGenericMethod(fieldType)
+                .Invoke(null, arguments);
+
+            field.SetValue(instance, result);
+            return (bool)arguments[3];
+        }
+
+        public static T TryAddType<T>(string id, string name, T value, out bool success)
+        {
+            Type fieldType = typeof(T);
+            success = false;
             if(fieldType.IsArray && fieldType.BaseType == typeof(Array))
             {
-                if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(field.Name, $"{id}-collapse-{field.Name}")))
+                success = true;
+                if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
                 {
-                    var result = AccessTools.Method(typeof(GenericEnumerableField), nameof(AddArray))
+                    ImGui.Indent();
+                    value = (T)AccessTools.Method(typeof(GenericEnumerableField), nameof(AddArray))
                         .MakeGenericMethod(fieldType.GetElementType())
-                        .Invoke(null, parameters: new object[] { field.GetValue<object>(instance), field, fieldType, $"{id}-{field.Name}" });
-
-                    field.SetValue(instance, result);
+                        .Invoke(null, parameters: new object[] { value, id });
+                    ImGui.Unindent();
+                    return value;
                 }
-                return true;
             }
 
-            if (!fieldType.IsGenericType) return false;
+            if (!fieldType.IsGenericType) return value;
 
             var genericFieldType = fieldType.GetGenericTypeDefinition();
             if(genericFieldType == typeof(Dictionary<,>))
             {
-                if(fieldType.GenericTypeArguments[0] != typeof(string)) return true; //TODO create support for enum (and maybe integer) keys 
-                if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(field.Name, $"{id}-collapse-{field.Name}")))
+                success = true;
+                
+                try
                 {
-                    AccessTools.Method(typeof(GenericEnumerableField), nameof(AddDictionary))
-                        .MakeGenericMethod(fieldType.GenericTypeArguments[1])
-                        .Invoke(null, parameters: new object[] { instance, field, fieldType, $"{id}-{field.Name}" });
+                    value ??= Activator.CreateInstance<T>();
                 }
-                return true;
+                catch
+                {
+                    ImGui.Text($"#Could not init '{typeof(T)}'#{id}-collapse-error");
+                    return value;
+                }
+
+                if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
+                {
+                    ImGui.Indent();
+                    AccessTools.Method(typeof(GenericEnumerableField), nameof(AddDictionary))
+                        .MakeGenericMethod(fieldType.GenericTypeArguments)
+                        .Invoke(null, parameters: new object[] { value, id });
+                    ImGui.Unindent();
+                    return value;
+                }
             }
-            return false;
+            return value;
         }
 
-        public static T[] AddArray<T>(object instance, MemberInfo member, Type fieldType, string id)
+        public static T[] AddArray<T>(T[] array, string id)
         {
-            var array = (T[])instance;
+            array ??= Array.Empty<T>();
             T[] newArray = null;
-            if (ImGui.BeginTable($"##{id}-array-{member.Name}", 2, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.SizingStretchProp ))
+            if (ImGui.BeginTable($"##{id}-array", 2, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.SizingStretchProp ))
             {
                 ImGui.TableSetupColumn($"##{id}-array-item-col", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableSetupColumn($"##{id}-array-del-col", ImGuiTableColumnFlags.WidthFixed);
@@ -64,13 +93,14 @@ namespace AutoConfigLib.AutoConfig.Fields
                 {
                     ImGui.TableNextRow();
                     ImGui.TableNextColumn();
-                    var itemId = $"##{id}-array-{member.Name}-{i}";
+                    var itemId = $"{id}-array-{i}";
 
                     ImGui.SetNextItemWidth(-1);
-                    var result = SimpleField.TryAddType(itemId, array[i], out bool success);
-                    //TODO: complex types
+                    var result = TryAddType(itemId, "Value", array[i], out bool arrayItemSuccess);
+                    if(!arrayItemSuccess) result = SimpleField.TryAddType(itemId, array[i], out arrayItemSuccess);
+                    if(!arrayItemSuccess) result = ComplexField.TryAddType(itemId, "Value", array[i], out arrayItemSuccess);
                     
-                    if (success)
+                    if (arrayItemSuccess)
                     {
                         array[i] = result;
                     }
@@ -112,10 +142,9 @@ namespace AutoConfigLib.AutoConfig.Fields
             return newArray ?? array;
         }
 
-        public static void AddDictionary<V>(object instance, MemberInfo field, Type fieldType, string id)
+        public static void AddDictionary<K, V>(Dictionary<K, V> dict, string id)
         {
-            var dict = field.GetValue<Dictionary<string, V>>(instance);
-            if (ImGui.BeginTable($"{id}-dict-{field.Name}", 3, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoPadInnerX))
+            if (ImGui.BeginTable($"{id}-dict", 3, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoPadInnerX))
             {
                 ImGui.TableSetupColumn($"##{id}-dict-key-col", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableSetupColumn($"##{id}-dict-val-col", ImGuiTableColumnFlags.WidthStretch);
@@ -123,31 +152,41 @@ namespace AutoConfigLib.AutoConfig.Fields
                 for (int row = 0; row < dict.Count; row++)
                 {
                     ImGui.TableNextRow();
-                    string key = dict.Keys.ElementAt(row);
-                    string prevKey = (string)key.Clone();
+
+                    K key = dict.Keys.ElementAt(row);
                     V value = dict.Values.ElementAt(row);
-
                     ImGui.TableNextColumn();
 
                     ImGui.SetNextItemWidth(-1);
-                    ImGui.InputText($"##{id}-DictKey-{row}", ref key, 300);
-                    if (prevKey != key)
+                    var newKey = SimpleField.TryAddType($"{id}-DictKey-{row}", key, out bool successKey);
+
+                    if (!successKey) ImGui.Text($"Unsopported dict value type '{typeof(K)}'");
+
+                    if (successKey && !key.Equals(newKey))
                     {
-                        dict.Remove(prevKey);
-                        dict.TryAdd(key, value);
-                        value = dict.Values.ElementAt(row);
+                        if (!dict.ContainsKey(newKey))
+                        {
+                            //Ensuring uniqueness of key
+                            dict.Remove(key);
+                            dict.TryAdd(newKey, value);
+                            value = dict.Values.ElementAt(row);
+
+                            key = newKey;
+                        }
+                        else
+                        {
+                            //TODO maybe we should swap keys/values in this case?
+                        }
                     }
                     ImGui.TableNextColumn();
-                    //TODO: ensure keys are unique
-
+                    
                     ImGui.SetNextItemWidth(-1);
-                    value = SimpleField.TryAddType($"##{id}-DictValue-{row}-{key}", value, out bool success);
 
-                    if (!success)
-                    {
-                        ImGui.Text($"Unsopported dict value type '{typeof(V)}'");
-                        //This dict key is a not supported type
-                    }
+                    value = TryAddType($"{id}-DictValue-{row}-{key}", "Value", value, out bool successValue);
+                    if (!successValue) value = SimpleField.TryAddType($"{id}-DictValue-{row}-{key}", value, out successValue);
+                    if (!successValue) value = ComplexField.TryAddType($"{id}-DictValue-{row}-{key}", "Value", value, out successValue);
+                    //TODO: see if we can have the complex field use all that empty space on the left
+                    if (!successValue) ImGui.Text($"Unsopported dict value type '{typeof(V)}'");
 
                     dict[key] = value;
                     ImGui.TableNextColumn();
@@ -161,10 +200,27 @@ namespace AutoConfigLib.AutoConfig.Fields
 
             if (ImGui.Button($"Add##{id}-DictAdd", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
-                int rowId = dict.Count;
-                string newKey = $"row {rowId}";
-                while (dict.ContainsKey(newKey)) newKey = $"row {++rowId}";
-                dict.TryAdd(newKey, default);
+                try
+                {
+                    var newKey = UniqueGenerator.GenerateUnique(dict.Keys);
+                    V newInstance;
+
+                    try
+                    {
+                        newInstance = Activator.CreateInstance<V>();
+                    }
+                    catch
+                    {
+                        newInstance = default;
+                        //Can't initialize this type so use default
+                    }
+                    dict.TryAdd(newKey, newInstance);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    //failed to add key
+                }
             }
         }
     }

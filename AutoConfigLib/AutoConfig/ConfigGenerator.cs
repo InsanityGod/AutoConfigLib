@@ -96,9 +96,6 @@ namespace AutoConfigLib.AutoConfig
 
         public static void AddType(Type type, object instance, string id)
         {
-            if(instance is null) return;
-            if(type.IsValueType) return;
-
             //TODO group by keywords!
             foreach (var member in type.GetMembers())
             {
@@ -115,13 +112,8 @@ namespace AutoConfigLib.AutoConfig
                 if (fieldType == null) continue;
                 if (GenericEnumerableField.TryAdd(instance, member, fieldType, id)) continue;
                 if (SimpleField.TryAdd(instance, member, fieldType, id)) continue;
-                
-                if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(member.Name, $"{id}-collapse-{member.Name}")))
-                {
-                    ImGui.Indent();
-                    AddType(fieldType, member.GetValue<object>(instance), $"{id}-{member.Name}");
-                    ImGui.Unindent();
-                }
+                if(ComplexField.TryAdd(instance, member, fieldType, id)) continue;
+                ImGui.Text($"Unsopported object type '{fieldType}'");
             }
         }
     }
