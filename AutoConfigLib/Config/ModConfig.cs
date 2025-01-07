@@ -19,12 +19,14 @@ namespace AutoConfigLib.Config
         /// </summary>
         public bool ShowPresenceOfUnsupportedTypes { get; set; } = false;
 
-
+        /// <summary>
+        /// The maximum length of string fields
+        /// </summary>
+        public uint MaxStringLength { get; set; } = 128;
 
         /// <summary>
         /// Do not touch this
         /// </summary>
         public bool DoNotTouchThis { get; set; } = false;
-        public uint MaxStringLength { get; set; } = 128;
     }
 }
