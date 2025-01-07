@@ -19,6 +19,8 @@ namespace AutoConfigLib
                 harmony.PatchAllUncategorized();
                 PatchConfigLoadingCode.PatchConfigStuff(api, harmony);
             }
+
+            //TODO world config
             base.StartPre(api);
         }
 

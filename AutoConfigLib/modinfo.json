@@ -1,13 +1,14 @@
 {
   "type": "code",
   "modid": "autoconfiglib",
-  "name": "AutoConfigLib",
+  "name": "Auto config lib",
   "authors": [
-    "Unknown"
+    "TheInsanityGod"
   ],
-  "description": "To be added",
+  "description": "Automatically creates a ConfigLib implementation for mods that don't have one",
   "version": "1.0.0",
   "dependencies": {
-    "game": ""
+    "game": "",
+    "configlib": ""
   }
 }
