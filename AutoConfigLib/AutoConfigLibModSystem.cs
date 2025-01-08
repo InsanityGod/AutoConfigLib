@@ -1,7 +1,6 @@
 ﻿using AutoConfigLib.AutoConfig;
 using AutoConfigLib.Config;
 using AutoConfigLib.HarmonyPatches;
-using ConfigLib;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -87,6 +86,8 @@ namespace AutoConfigLib
         {
             harmony?.UnpatchAll();
             ConfigGenerator.Configs = null;
+            ConfigGenerator.TouchedDoNotTouch = false;
+            WorldConfig.worldConfigLoaded = false;
             base.Dispose();
         }
     }

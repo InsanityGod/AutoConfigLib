@@ -2,14 +2,11 @@
 using ConfigLib;
 using HarmonyLib;
 using ImGuiNET;
-using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 using Vintagestory.API.Common;
 
 namespace AutoConfigLib.AutoConfig
@@ -101,6 +98,7 @@ namespace AutoConfigLib.AutoConfig
             }
 
             if(AutoConfigLibModSystem.Config.DoNotTouchThis) DoNotTouchThis(api);
+            if(AutoConfigLibModSystem.Config.LoadWorldConfig) WorldConfig.LoadWorldConfig(api);
         }
 
         internal static bool TouchedDoNotTouch = false;
@@ -137,6 +135,7 @@ namespace AutoConfigLib.AutoConfig
         public static void HandleConfigButtons(ICoreAPI api, Config config, string id, ControlButtons buttons)
         {
             if(!TouchedDoNotTouch && AutoConfigLibModSystem.Config.DoNotTouchThis) DoNotTouchThis(api);
+            if(!WorldConfig.worldConfigLoaded && AutoConfigLibModSystem.Config.LoadWorldConfig) WorldConfig.LoadWorldConfig(api);
 
             if (buttons.Save)
             {

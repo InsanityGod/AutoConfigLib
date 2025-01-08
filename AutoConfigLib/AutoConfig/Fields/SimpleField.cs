@@ -195,9 +195,10 @@ namespace AutoConfigLib.AutoConfig.Fields
 
         public static string GetImGuiName(string name, string id) => $"{GetHumanReadable(name)}##{id}";
 
+        internal static readonly char[] ReadableSplitIdentifiers = new char[] { '-', '_', ':' };
         public static string GetHumanReadable(string str)
         {
-        if (string.IsNullOrWhiteSpace(str)) return string.Empty;
+            if (string.IsNullOrWhiteSpace(str)) return string.Empty;
 
             StringBuilder newText = new(str.Length * 2);
             newText.Append(str[0]);
@@ -212,7 +213,12 @@ namespace AutoConfigLib.AutoConfig.Fields
                 newText.Append(str[i]);
             }
 
-            return newText.Replace('_',' ').ToString();
+            foreach(var delimiter in ReadableSplitIdentifiers)
+            {
+                newText.Replace(delimiter,' ');
+            }
+
+            return newText.ToString();
         }
     }
 }
