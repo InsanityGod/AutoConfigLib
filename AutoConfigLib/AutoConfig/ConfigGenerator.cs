@@ -73,11 +73,18 @@ namespace AutoConfigLib.AutoConfig
             var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
             foreach (var config in Configs.Values)
             {
-                config.Mod = api.ModLoader.Mods.First(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
+                config.Mod = AutoConfigLibModSystem.CoreServerAPI?.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
+                config.Mod ??= AutoConfigLibModSystem.CoreClientAPI?.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
             }
 
             foreach (var config in Configs.Values)
             {
+                if(config.Mod == null)
+                {
+                    api.Logger.Error($"Could not find mod for '{config.Type?.FullName}'");
+                    continue;
+                }
+
                 var value = config.ClientValue;
                 value ??= config.ServerValue;
 

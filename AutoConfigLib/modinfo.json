@@ -6,7 +6,7 @@
     "TheInsanityGod"
   ],
   "description": "Automatically creates a ConfigLib implementation for mods that don't have one",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "dependencies": {
     "game": "",
     "configlib": ""
