@@ -26,6 +26,11 @@ namespace AutoConfigLib.Config
         public int MaxStringLength { get; set; } = 128;
 
         /// <summary>
+        /// If set to true will automatically attempt to create a new instance of fields/properties that are null
+        /// </summary>
+        public bool AutoInitializeNullFields { get; set; } = false;
+
+        /// <summary>
         /// If enabled you will see messages in the in config if auto parsing failed to find a way to display an property/field in the config
         /// </summary>
         public bool ShowPresenceOfUnsupportedTypes { get; set; } = false;

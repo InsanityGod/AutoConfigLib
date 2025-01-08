@@ -33,6 +33,23 @@ namespace AutoConfigLib.AutoConfig.Fields
             if(fieldType.IsArray && fieldType.BaseType == typeof(Array))
             {
                 success = true;
+
+                if(value == null)
+                {
+                    if(AutoConfigLibModSystem.Config.AutoInitializeNullFields || ImGui.Button(SimpleField.GetImGuiName($"Initialize {name} (Array)", $"{id}-initialize-button")))
+                    {
+                        try
+                        {
+                            value = Activator.CreateInstance<T>();
+                        }
+                        catch
+                        {
+                            //Couldn't initialize
+                        }
+                    }
+                    if(value == null) return value;
+                }
+
                 if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
                 {
                     ImGui.Indent();
@@ -51,14 +68,20 @@ namespace AutoConfigLib.AutoConfig.Fields
             {
                 success = true;
                 
-                try
+                if(value == null)
                 {
-                    value ??= Activator.CreateInstance<T>();
-                }
-                catch
-                {
-                    ImGui.Text($"#Could not init '{typeof(T)}'#{id}-collapse-error");
-                    return value;
+                    if(AutoConfigLibModSystem.Config.AutoInitializeNullFields || ImGui.Button(SimpleField.GetImGuiName($"Initialize {name} (Dictionary)", $"{id}-initialize-button")))
+                    {
+                        try
+                        {
+                            value = Activator.CreateInstance<T>();
+                        }
+                        catch
+                        {
+                            //Couldn't initialize
+                        }
+                    }
+                    if(value == null) return value;
                 }
 
                 if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
@@ -76,14 +99,20 @@ namespace AutoConfigLib.AutoConfig.Fields
             {
                 success = true;
                 
-                try
+                if(value == null)
                 {
-                    value ??= Activator.CreateInstance<T>();
-                }
-                catch
-                {
-                    ImGui.Text($"#Could not init '{typeof(T)}'#{id}-collapse-error");
-                    return value;
+                    if(AutoConfigLibModSystem.Config.AutoInitializeNullFields || ImGui.Button(SimpleField.GetImGuiName($"Initialize {name} (List)", $"{id}-initialize-button")))
+                    {
+                        try
+                        {
+                            value = Activator.CreateInstance<T>();
+                        }
+                        catch
+                        {
+                            //Couldn't initialize
+                        }
+                    }
+                    if(value == null) return value;
                 }
 
                 if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
@@ -103,14 +132,20 @@ namespace AutoConfigLib.AutoConfig.Fields
 
                 if(!AutoConfigLibModSystem.Config.UseDefaultImplementationForCollections) return value;
 
-                try
+                if(value == null)
                 {
-                    value ??= Activator.CreateInstance<T>();
-                }
-                catch
-                {
-                    ImGui.Text($"#Could not init '{typeof(T)}'#{id}-collapse-error");
-                    return value;
+                    if(AutoConfigLibModSystem.Config.AutoInitializeNullFields || ImGui.Button(SimpleField.GetImGuiName($"Initialize {name} (Collection)", $"{id}-initialize-button")))
+                    {
+                        try
+                        {
+                            value = Activator.CreateInstance<T>();
+                        }
+                        catch
+                        {
+                            //Couldn't initialize
+                        }
+                    }
+                    if(value == null) return value;
                 }
 
                 if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
@@ -152,7 +187,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     }
                     else
                     {
-                        ImGui.Text($"Unsupported array element of type '{typeof(T)}'");
+                        ImGui.TextWrapped($"Unsupported array element of type '{typeof(T)}'");
                         //This array is a not supported type
                         ImGui.EndTable();
                         return array;
@@ -169,22 +204,30 @@ namespace AutoConfigLib.AutoConfig.Fields
             }
             ImGui.EndTable();
 
+            ImGui.BeginDisabled(typeof(T).IsAbstract);
             if (ImGui.Button($"Add##{id}-ArrayAdd", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 T newInstance;
 
-                try
+                if(typeof(T) == typeof(string))
                 {
-                    newInstance = Activator.CreateInstance<T>();
+                    newInstance = (T)(object)string.Empty;
+                    newArray = (newArray ?? array).Append(newInstance);
                 }
-                catch
+                else
                 {
-                    newInstance = default;
-                    //Can't initialize this type so use default
+                    try
+                    {
+                        newInstance = Activator.CreateInstance<T>();
+                        newArray = (newArray ?? array).Append(newInstance);
+                    }
+                    catch
+                    {
+                        //Can't initialize this type so ignore
+                    }
                 }
-                newArray = (newArray ?? array).Append(newInstance);
             }
-
+            ImGui.EndDisabled();
             return newArray ?? array;
         }
 
@@ -213,7 +256,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     }
                     else
                     {
-                        ImGui.Text($"Unsupported list element of type '{typeof(T)}'");
+                        ImGui.TextWrapped($"Unsupported list element of type '{typeof(T)}'");
                         //This list is a not supported type
                         ImGui.EndTable();
                         return;
@@ -230,21 +273,30 @@ namespace AutoConfigLib.AutoConfig.Fields
             }
             ImGui.EndTable();
 
+            ImGui.BeginDisabled(typeof(T).IsAbstract);
             if (ImGui.Button($"Add##{id}-ListAdd", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 T newInstance;
 
-                try
+                if(typeof(T) == typeof(string))
                 {
-                    newInstance = Activator.CreateInstance<T>();
+                    newInstance = (T)(object)string.Empty;
+                    list.Add(newInstance);
                 }
-                catch
+                else
                 {
-                    newInstance = default;
-                    //Can't initialize this type so use default
+                    try
+                    {
+                        newInstance = Activator.CreateInstance<T>();
+                        list.Add(newInstance);
+                    }
+                    catch
+                    {
+                        //Can't initialize this type so ignore
+                    }
                 }
-                list.Add(newInstance);
             }
+            ImGui.EndDisabled();
         }
 
         public static unsafe void AddGenericCollection<T>(ICollection<T> collection, string id)
@@ -280,7 +332,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     }
                     else
                     {
-                        ImGui.Text($"Unsupported array element of type '{typeof(T)}'");
+                        ImGui.TextWrapped($"Unsupported array element of type '{typeof(T)}'");
                         //This array is a not supported type
                         ImGui.EndTable();
                         break;
@@ -300,6 +352,7 @@ namespace AutoConfigLib.AutoConfig.Fields
             }
             ImGui.EndTable();
 
+            ImGui.BeginDisabled(typeof(T).IsAbstract);
             if (ImGui.Button($"Add##{id}-ArrayAdd", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 T newInstance;
@@ -311,23 +364,15 @@ namespace AutoConfigLib.AutoConfig.Fields
                         newInstance = UniqueGenerator.GenerateUnique(collection);
                     }
                     else newInstance = Activator.CreateInstance<T>();
-                }
-                catch
-                {
-                    newInstance = default;
-                    //Can't initialize this type so use default
-                }
-
-                try
-                {
                     collection.Add(newInstance);
                 }
                 catch
                 {
-                    //should only happen if someone messed up their collection type
+                    //Can't initialize this type so ignore
                 }
 
             }
+            ImGui.EndDisabled();
         }
 
         public static void AddDictionary<K, V>(Dictionary<K, V> dict, string id)
@@ -348,7 +393,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     ImGui.SetNextItemWidth(-1);
                     var newKey = SimpleField.TryAddType($"{id}-DictKey-{row}", key, out bool successKey);
 
-                    if (!successKey) ImGui.Text($"Unsupported dict value type '{typeof(K)}'");
+                    if (!successKey) ImGui.TextWrapped($"Unsupported dict value type '{typeof(K)}'");
 
                     if (successKey && !key.Equals(newKey))
                     {
@@ -370,7 +415,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     if (!successValue) value = SimpleField.TryAddType($"{id}-DictValue-{row}-{key}", value, out successValue);
                     if (!successValue) value = ComplexField.TryAddType($"{id}-DictValue-{row}-{key}", "Value", value, out successValue);
                     //TODO: see if we can have the complex field use all that empty space on the left
-                    if (!successValue) ImGui.Text($"Unsupported dict value type '{typeof(V)}'");
+                    if (!successValue) ImGui.TextWrapped($"Unsupported dict value type '{typeof(V)}'");
 
                     dict[key] = value;
                     ImGui.TableNextColumn();
@@ -382,6 +427,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                 ImGui.EndTable();
             }
 
+            ImGui.BeginDisabled(typeof(V).IsAbstract);
             if (ImGui.Button($"Add##{id}-DictAdd", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 try
@@ -389,16 +435,26 @@ namespace AutoConfigLib.AutoConfig.Fields
                     var newKey = UniqueGenerator.GenerateUnique(dict.Keys);
                     V newInstance;
 
-                    try
+                    if(typeof(V) == typeof(string))
                     {
-                        newInstance = Activator.CreateInstance<V>();
+                        newInstance = (V)(object)string.Empty;
+                        dict.TryAdd(newKey, newInstance);
                     }
-                    catch
+                    else
                     {
-                        newInstance = default;
-                        //Can't initialize this type so use default
+                        try
+                        {
+                            newInstance = Activator.CreateInstance<V>();
+                            dict.TryAdd(newKey, newInstance);
+                        }
+                        catch
+                        {
+                            //Can't initialize this type so use default
+                        }
                     }
-                    dict.TryAdd(newKey, newInstance);
+
+                   
+
                 }
                 catch(Exception ex)
                 {
@@ -406,6 +462,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                     //failed to add key
                 }
             }
+            ImGui.EndDisabled();
         }
     }
 }

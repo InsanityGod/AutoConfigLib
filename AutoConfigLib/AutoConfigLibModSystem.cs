@@ -67,6 +67,9 @@ namespace AutoConfigLib
                 harmony = new Harmony(Mod.Info.ModID);
 
                 harmony.PatchAllUncategorized();
+
+                if(api.ModLoader.IsModEnabled("configureeverything")) harmony.PatchCategory("configureeverything");
+
                 PatchConfigLoadingCode.PatchConfigStuff(api, harmony);
             }
             

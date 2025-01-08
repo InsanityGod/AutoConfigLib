@@ -227,8 +227,10 @@ namespace AutoConfigLib.AutoConfig
                 if (fieldType == null) continue;
                 if (GenericEnumerableField.TryAdd(instance, member, fieldType, id)) continue;
                 if (SimpleField.TryAdd(instance, member, fieldType, id)) continue;
+                if(SimpleField.SuppertedSimpleTypes.Contains(fieldType) || SimpleField.SuppertedSimpleTypes.Contains(fieldType.BaseType)) continue; //If we have a simple type that can't be read or writen to
+                
                 if(ComplexField.TryAdd(instance, member, fieldType, id)) continue;
-                if(AutoConfigLibModSystem.Config.ShowPresenceOfUnsupportedTypes) ImGui.Text($"Unsupported field of type '{fieldType}'");
+                if(AutoConfigLibModSystem.Config.ShowPresenceOfUnsupportedTypes) ImGui.TextWrapped($"Unsupported field of type '{fieldType}'");
             }
         }
     }

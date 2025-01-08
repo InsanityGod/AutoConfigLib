@@ -1,13 +1,7 @@
 ﻿using HarmonyLib;
 using ImGuiNET;
-using Microsoft.VisualBasic.FileIO;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Core.Tokens;
 
 namespace AutoConfigLib.AutoConfig.Fields
 {
@@ -32,10 +26,26 @@ namespace AutoConfigLib.AutoConfig.Fields
         {
             success = false;
 
-            if(value is null) return value;
             if(typeof(T).IsValueType) return value;
             
             success = true;
+            if(value is null)
+            {
+
+                if(AutoConfigLibModSystem.Config.AutoInitializeNullFields || ImGui.Button(SimpleField.GetImGuiName($"Initialize {name} Field", $"{id}-initialize-button")))
+                {
+                    try
+                    {
+                        value = Activator.CreateInstance<T>();
+                    }
+                    catch
+                    {
+                        //Couldn't initialize
+                    }
+                }
+
+                if(value is null) return value;
+            }
 
             if(ImGui.CollapsingHeader(SimpleField.GetImGuiName(name, $"{id}-collapse")))
             {

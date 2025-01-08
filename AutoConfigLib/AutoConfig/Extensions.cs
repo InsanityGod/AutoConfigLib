@@ -12,6 +12,7 @@ namespace AutoConfigLib.AutoConfig
             {
                 if (memberInfo is PropertyInfo property)
                 {
+                    //TODO Code.IsWildCard gives exception if path is not set (which if just initialized is the case) (Maybe just have code be editable as string?)
                     return (T)property.GetValue(instance);
                 }
 

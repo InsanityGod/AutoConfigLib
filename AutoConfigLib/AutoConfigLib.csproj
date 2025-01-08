@@ -12,6 +12,10 @@
       <HintPath>..\..\Dep\configlib_1.4.1\configlib.dll</HintPath>
       <Private>false</Private>
 	</Reference>
+    <Reference Include="ConfigureEverything">
+      <HintPath>..\..\Dep\ConfigureEverything-v2.1.3\ConfigureEverything.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="ImGui.NET">
       <HintPath>..\..\Dep\vsimgui_1.1.7\ImGui.NET.dll</HintPath>
       <Private>false</Private>
