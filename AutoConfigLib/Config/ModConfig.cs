@@ -20,9 +20,15 @@ namespace AutoConfigLib.Config
         public bool ShowPresenceOfUnsupportedTypes { get; set; } = false;
 
         /// <summary>
+        /// If enabled will attempt to show any ICollection using a default implementation
+        /// (Beware that editing through this implementation will affect the order of the collection)
+        /// </summary>
+        public bool UseDefaultImplementationForCollections { get; set; } = false;
+
+        /// <summary>
         /// The maximum length of string fields
         /// </summary>
-        public uint MaxStringLength { get; set; } = 128;
+        public int MaxStringLength { get; set; } = 128;
 
         /// <summary>
         /// Do not touch this

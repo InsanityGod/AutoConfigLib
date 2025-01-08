@@ -1,17 +1,10 @@
 ﻿using HarmonyLib;
 using ImGuiNET;
-using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Xml.Serialization;
-using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 
 namespace AutoConfigLib.AutoConfig.Fields
@@ -134,19 +127,60 @@ namespace AutoConfigLib.AutoConfig.Fields
                 bool wasNull = stringValue == null;
                 if(wasNull) stringValue = string.Empty;
 
-                ImGui.InputText(id, ref stringValue, AutoConfigLibModSystem.Config.MaxStringLength);
+                ImGui.InputText(id, ref stringValue, (uint)AutoConfigLibModSystem.Config.MaxStringLength);
                 value = (string.IsNullOrEmpty(stringValue) && wasNull) ?
                     (T)(object)null :
                     (T)(object)stringValue;
             }
             else if(typeof(T).BaseType == typeof(Enum))
             {
-                var values = (T[])Enum.GetValues(typeof(T));
-                var keys = values.Select(item => GetHumanReadable(Enum.GetName(typeof(T), item))).ToArray();
-                var currentIndex = keys.IndexOf(GetHumanReadable(Enum.GetName(typeof(T), value)));
-                ImGui.Combo(id, ref currentIndex, keys, keys.Length);
+                var flags = typeof(T).GetCustomAttribute<FlagsAttribute>();
+                if (flags == null)
+                {
+                    var values = (T[])Enum.GetValues(typeof(T));
+                    var keys = values.Select(item => GetHumanReadable(Enum.GetName(typeof(T), item))).ToArray();
+                    var currentIndex = keys.IndexOf(GetHumanReadable(Enum.GetName(typeof(T), value)));
+                    ImGui.Combo(id, ref currentIndex, keys, keys.Length);
 
-                value = (T)(object)values[currentIndex];
+                    value = (T)(object)values[currentIndex];
+                }
+                else
+                {
+                    int intValue = Convert.ToInt32(value);
+                    bool modified = false;
+
+                    if (ImGui.BeginCombo(id, intValue == 0 ? "None" : value.ToString()))
+                    {
+                        // Iterate over each enum flag
+                        foreach (T flag in Enum.GetValues(typeof(T)))
+                        {
+                            // Skip the "None" option (optional)
+                            if (Convert.ToInt32(flag) == 0)
+                                continue;
+
+                            // Check if the current flag is set
+                            bool isSelected = (intValue & Convert.ToInt32(flag)) != 0;
+
+                            // Draw a selectable checkbox for this flag
+                            if (ImGui.Selectable(flag.ToString(), isSelected))
+                            {
+                                // Toggle the flag
+                                if (isSelected)
+                                    intValue &= ~Convert.ToInt32(flag); // Remove the flag
+                                else
+                                    intValue |= Convert.ToInt32(flag); // Add the flag
+
+                                modified = true;
+                            }
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    // Update the enum value if it was modified
+                    if (modified) value = (T)Enum.ToObject(typeof(T), intValue);
+
+                }
             }
             else
             {

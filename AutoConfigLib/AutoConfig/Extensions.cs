@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace AutoConfigLib.AutoConfig
@@ -45,6 +46,19 @@ namespace AutoConfigLib.AutoConfig
             {
                 //Something is going wrong here
             }
+        }
+
+        public static bool IsICollection(this Type type)
+        {
+            // Check if the type implements any generic interface of ISet<T>
+            foreach (var interfaceType in type.GetInterfaces())
+            {
+                if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(ICollection<>))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

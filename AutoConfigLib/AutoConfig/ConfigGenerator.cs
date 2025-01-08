@@ -187,10 +187,21 @@ namespace AutoConfigLib.AutoConfig
             EditConfig(api, config, id);
         }
 
-        public static void EditConfig(ICoreAPI api, Config config, string id) => AddType(config.Type, config.PrimaryValue, id);
+        public static void EditConfig(ICoreAPI api, Config config, string id)
+        {
+            try
+            {
+                AddType(config.Type, config.PrimaryValue, id);
+            }
+            catch (Exception ex) 
+            {
+                ImGui.Text($"Unexpected Error, please report on mod page: {ex}");
+            }
+        }
 
         public static void AddType(Type type, object instance, string id)
         {
+            if(instance is null) return;
             //TODO group by keywords
             foreach (var member in type.GetMembers())
             {
