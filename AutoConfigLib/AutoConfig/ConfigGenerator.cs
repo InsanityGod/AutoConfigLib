@@ -96,7 +96,7 @@ namespace AutoConfigLib.AutoConfig
                 }
 
                 var extraStr = string.Empty;
-                if(Configs.Values.Count(conf => conf.Mod.Info.ModID == config.Mod.Info.ModID) > 1)
+                if(Configs.Values.Count(conf => conf.Mod?.Info.ModID == config.Mod.Info.ModID) > 1)
                 {
                     extraStr = " - " + config.Filename.Split('.')[0];
                 }
