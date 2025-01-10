@@ -1,13 +1,10 @@
 ﻿using AutoConfigLib.Auto;
-using AutoConfigLib.AutoConfig;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Common;
 
 namespace AutoConfigLib.HarmonyPatches
@@ -40,13 +37,13 @@ namespace AutoConfigLib.HarmonyPatches
         public static T GetConfigOverride<T>(ICoreAPICommon api, string fileName)
         {
             var result = api.LoadModConfig<T>(fileName);
-            if(api is not ICoreAPI coreApi)
+            if (api is not ICoreAPI coreApi)
             {
                 //shouldn't happen but just in case
                 Console.WriteLine("AutoConfigLib: Failed to register config because LoadModConfig was not called on 'ICoreApi' but a different implementation of 'ICoreCommonApi'");
                 return result;
             }
-            
+
             AutoConfigLibModSystem.EnsureApiCache(coreApi);
             return AutoConfigGenerator.RegisterOrCollectConfigFile(coreApi, fileName, result);
         }

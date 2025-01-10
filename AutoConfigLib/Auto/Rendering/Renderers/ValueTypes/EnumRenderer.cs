@@ -1,18 +1,14 @@
 ﻿using ImGuiNET;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Util;
-using YamlDotNet.Core.Tokens;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 {
     public class EnumRenderer<T> : IRenderer<T> where T : struct, Enum
     {
+        
         public bool IsEnumFlag { get; private set; }
 
         public T[] ValidValues { get; private set; }
@@ -44,7 +40,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 
                 if (ImGui.BeginCombo($"{fieldDefinition?.Name}##{id}", intValue == 0 ? "None" : instance.ToString()))
                 {
-                    for(int i = 0; i < ValidValues.Length; i++)
+                    for (int i = 0; i < ValidValues.Length; i++)
                     {
                         var flag = ValidValues[i];
                         if (Convert.ToInt32(flag) == 0)

@@ -1,14 +1,11 @@
 ﻿using ImGuiNET;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
 {
     public abstract class ComplexRendererBase<T> : IRenderer<T>
     {
+        
         public bool CanBeInitialized { get; private set; }
 
         public bool ShouldBeInsideCollapseHeader => true;
@@ -47,8 +44,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
                 ImGui.EndDisabled();
                 return instance;
             }
-
-
 
             return RenderValue(instance, id, fieldDefinition);
         }

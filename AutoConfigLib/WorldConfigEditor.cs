@@ -1,14 +1,9 @@
-﻿using AutoConfigLib.AutoConfig.Fields;
+﻿using AutoConfigLib.Auto.Rendering;
 using ConfigLib;
-using HarmonyLib;
 using ImGuiNET;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.Util;
 
 namespace AutoConfigLib
@@ -66,54 +61,59 @@ namespace AutoConfigLib
                 case EnumDataType.Bool:
                     var boolValue = config.GetAsBool(attribute.Code);
                     var oldBoolValue = boolValue;
-                    ImGui.Checkbox($"{SimpleField.GetHumanReadable(attribute.Code)}##{id}", ref boolValue);
+                    ImGui.Checkbox($"{Renderer.GetHumanReadable(attribute.Code)}##{id}", ref boolValue);
                     if (oldBoolValue != boolValue)
                     {
                         config.SetBool(attribute.Code, boolValue);
                     }
                     break;
+
                 case EnumDataType.IntInput:
                     var intValue = config.GetInt(attribute.Code);
                     var oldIntValue = intValue;
-                    ImGui.InputInt($"{SimpleField.GetHumanReadable(attribute.Code)}##{id}", ref intValue);
+                    ImGui.InputInt($"{Renderer.GetHumanReadable(attribute.Code)}##{id}", ref intValue);
                     if (oldIntValue != intValue)
                     {
                         config.SetInt(attribute.Code, intValue);
                     }
                     break;
+
                 case EnumDataType.DoubleInput:
                     var doubleValue = config.GetInt(attribute.Code);
                     var oldDoubleValue = doubleValue;
-                    ImGui.InputInt($"{SimpleField.GetHumanReadable(attribute.Code)}##{id}", ref doubleValue);
+                    ImGui.InputInt($"{Renderer.GetHumanReadable(attribute.Code)}##{id}", ref doubleValue);
                     if (oldDoubleValue != doubleValue)
                     {
                         config.SetDouble(attribute.Code, doubleValue);
                     }
                     break;
+
                 case EnumDataType.IntRange:
                     var intRangeValue = config.GetInt(attribute.Code);
                     var oldIntRangeValue = intRangeValue;
-                    ImGui.DragInt($"{SimpleField.GetHumanReadable(attribute.Code)}##{id}", ref intRangeValue, Math.Min((int)attribute.Step, 1), (int)attribute.Min, (int)attribute.Max);
+                    ImGui.DragInt($"{Renderer.GetHumanReadable(attribute.Code)}##{id}", ref intRangeValue, Math.Min((int)attribute.Step, 1), (int)attribute.Min, (int)attribute.Max);
                     if (oldIntRangeValue != intRangeValue)
                     {
                         config.SetInt(attribute.Code, intRangeValue);
                     }
                     break;
+
                 case EnumDataType.String:
                     var stringValue = config.GetAsString(attribute.Code);
                     var oldStringValue = stringValue;
                     stringValue ??= string.Empty;
-                    ImGui.InputText($"{SimpleField.GetHumanReadable(attribute.Code)}##{id}", ref stringValue, (uint)AutoConfigLibModSystem.Config.DefaultMaxStringLength);
+                    ImGui.InputText($"{Renderer.GetHumanReadable(attribute.Code)}##{id}", ref stringValue, (uint)AutoConfigLibModSystem.Config.DefaultMaxStringLength);
                     if (oldStringValue != null && oldStringValue != stringValue || oldStringValue == null && !string.IsNullOrEmpty(stringValue))
                     {
                         config.SetString(attribute.Code, stringValue);
                     }
                     break;
+
                 case EnumDataType.DropDown:
                     var dropDownValue = config.GetAsString(attribute.Code);
                     var currentIndex = attribute.Values.IndexOf(dropDownValue);
                     var oldIndex = currentIndex;
-                    ImGui.Combo($"{SimpleField.GetHumanReadable(attribute.Code)}##{id}", ref currentIndex, attribute.Names ?? attribute.Values, attribute.Values.Length);
+                    ImGui.Combo($"{Renderer.GetHumanReadable(attribute.Code)}##{id}", ref currentIndex, attribute.Names ?? attribute.Values, attribute.Values.Length);
                     if (oldIndex != currentIndex)
                     {
                         config.SetString(attribute.Code, attribute.Values[currentIndex]);
@@ -124,6 +124,5 @@ namespace AutoConfigLib
         }
 
         internal static readonly char[] spaceIdentifiers = new char[] { '-', ' ', '_', ':' };
-
     }
 }

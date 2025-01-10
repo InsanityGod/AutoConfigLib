@@ -5,7 +5,6 @@ using AutoConfigLib.HarmonyPatches;
 using ConfigLib;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -36,10 +35,10 @@ namespace AutoConfigLib
 
         public static ICoreClientAPI CoreClientAPI { get; set; }
         public static ICoreServerAPI CoreServerAPI { get; set; }
-        
+
         public static void EnsureApiCache(ICoreAPI api)
         {
-            if(api.Side == EnumAppSide.Client) CoreClientAPI ??= api as ICoreClientAPI;
+            if (api.Side == EnumAppSide.Client) CoreClientAPI ??= api as ICoreClientAPI;
             else CoreServerAPI ??= api as ICoreServerAPI;
         }
 
@@ -47,10 +46,10 @@ namespace AutoConfigLib
         {
             base.StartPre(api);
             EnsureApiCache(api);
-            
-            if(api.ModLoader.IsModEnabled("configureeverything")) harmony?.PatchCategory("configureeverything");
-            
-            if(Config == null)
+
+            if (api.ModLoader.IsModEnabled("configureeverything")) harmony?.PatchCategory("configureeverything");
+
+            if (Config == null)
             {
                 try
                 {
@@ -58,7 +57,7 @@ namespace AutoConfigLib
                     api.StoreModConfig(Config, ConfigName); //Save just in case new fields where initialized
                     Config = AutoConfigGenerator.RegisterOrCollectConfigFile(api, ConfigName, Config);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     api.Logger.Error($"Failed to load {ConfigName} using default, exception: {ex}");
                     Config = new();
@@ -71,8 +70,8 @@ namespace AutoConfigLib
         public override void StartClientSide(ICoreClientAPI api)
         {
             var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
-            if(configLib == null) return;
-            if(Config.LoadWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
+            if (configLib == null) return;
+            if (Config.LoadWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
             configLib.ConfigWindowClosed += Renderer.ClearCache;
         }
 
@@ -87,13 +86,13 @@ namespace AutoConfigLib
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="name"></param>
-        public static void AddForEditing<T>(T obj, string name) where T : class => 
+        public static void AddForEditing<T>(T obj, string name) where T : class =>
             CoreClientAPI.ModLoader.GetModSystem<ConfigLibModSystem>().RegisterCustomConfig(name, (string id, ControlButtons buttons) => Renderer.GetOrCreateRenderForType(typeof(T)).RenderObject(obj, id));
 
         public override void AssetsFinalize(ICoreAPI api)
         {
             base.AssetsFinalize(api);
-            if(api.Side == EnumAppSide.Server) return;
+            if (api.Side == EnumAppSide.Server) return;
 
             AutoConfigGenerator.RegisterFoundConfigInConfigLib(api);
             //TODO: see if we can patch the modloader to call this at the end of mod loading cyclus instead (just to make extra sure everthing of other mods is initialized)

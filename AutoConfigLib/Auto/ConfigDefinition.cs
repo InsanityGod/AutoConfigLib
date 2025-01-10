@@ -1,12 +1,10 @@
 ﻿using AutoConfigLib.Auto.Rendering;
 using ConfigLib;
+using ImGuiNET;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -28,17 +26,14 @@ namespace AutoConfigLib.Auto
 
         public void Save(ICoreAPI api) => api.StoreModConfig(new JsonObject(JToken.FromObject(PrimaryValue)), ConfigPath);
 
-        public IRenderer ConfigRenderer { get; set; }
-
         public void Edit(ICoreAPI api, string id, ControlButtons buttons)
         {
-            if(buttons.Defaults) ResetToDefaul();
-            if(buttons.Restore) ReloadFromFile(api);
-            if(buttons.Save) Save(api);
+            if (buttons.Defaults) ResetToDefaul();
+            if (buttons.Restore) ReloadFromFile(api);
+            if (buttons.Save) Save(api);
             //TODO: Reload?
 
-            ConfigRenderer ??= Renderer.GetOrCreateRenderForType(Type);
-            ConfigRenderer.RenderObject(PrimaryValue, id);
+            Renderer.GetOrCreateRenderForType(Type).RenderObject(PrimaryValue, id);
         }
 
         public void ResetToDefaul()
@@ -66,7 +61,7 @@ namespace AutoConfigLib.Auto
                             .Invoke(api, new object[] { ConfigPath });
                 OverwriteWith(newInstance);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 api.Logger.Error(ex);
             }
@@ -74,7 +69,7 @@ namespace AutoConfigLib.Auto
 
         private void OverwriteWith(object newInstance)
         {
-            if(newInstance.GetType() != Type)
+            if (newInstance.GetType() != Type)
             {
                 Console.WriteLine($"AutoConfig: Illegal overwrite attempt, expected '{Type}' but got '{newInstance.GetType()}'");
                 return;

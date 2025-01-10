@@ -1,12 +1,4 @@
 ﻿using ImGuiNET;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Common;
-using YamlDotNet.Core.Tokens;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 {

@@ -1,11 +1,6 @@
-﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoConfigLib.Auto.Rendering
 {
@@ -23,7 +18,31 @@ namespace AutoConfigLib.Auto.Rendering
 
         public bool IsVisible { get; set; } = true;
 
-        public IRenderer ValueRenderer { get; set; }
+        private IRenderer cachedRenderer;
+        public IRenderer ValueRenderer
+        {
+            get
+            {
+                //Lazy initialisation
+                if(cachedRenderer == null)
+                {
+                    if (PropertyInfo != null)
+                    {
+                        cachedRenderer = Renderer.GetOrCreateRenderForType(PropertyInfo.PropertyType);
+                    }
+                    else if (FieldInfo != null)
+                    {
+                        cachedRenderer = Renderer.GetOrCreateRenderForType(FieldInfo.FieldType);
+                    }
+                    else if (MethodInfo != null)
+                    {
+                        cachedRenderer = Renderer.GetOrCreateRenderForType(typeof(MethodInfo));
+                    }
+                }
+
+                return cachedRenderer;
+            }
+        }
 
         public PropertyInfo PropertyInfo { get; set; }
 
@@ -33,16 +52,16 @@ namespace AutoConfigLib.Auto.Rendering
 
         public object GetValue(object instance)
         {
-            if(PropertyInfo != null) return PropertyInfo.GetValue(instance);
-            if(FieldInfo != null) return FieldInfo.GetValue(instance);
-            if(MethodInfo != null) return MethodInfo;
+            if (PropertyInfo != null) return PropertyInfo.GetValue(instance);
+            if (FieldInfo != null) return FieldInfo.GetValue(instance);
+            if (MethodInfo != null) return MethodInfo;
 
             return null;
         }
 
         public void SetValue(object instance, object value)
         {
-            if(IsReadOnly) return;
+            if (IsReadOnly) return;
             try
             {
                 PropertyInfo?.SetValue(instance, value);
@@ -71,28 +90,25 @@ namespace AutoConfigLib.Auto.Rendering
             Category = categoryAttr?.Category ?? string.Empty;
 
             var readonlyAttr = memberInfo.GetCustomAttribute<ReadOnlyAttribute>();
-            if(readonlyAttr != null) IsReadOnly = readonlyAttr.IsReadOnly;
+            if (readonlyAttr != null) IsReadOnly = readonlyAttr.IsReadOnly;
 
             var browseAble = memberInfo.GetCustomAttribute<BrowsableAttribute>();
             IsVisible = browseAble?.Browsable ?? (MethodInfo == null);
 
             SubId = memberInfo.Name;
 
-            if(PropertyInfo != null)
+            if (PropertyInfo != null)
             {
-                ValueRenderer = Renderer.GetOrCreateRenderForType(PropertyInfo.PropertyType);
                 if (!PropertyInfo.CanWrite) IsReadOnly = true;
-                if(!PropertyInfo.CanRead || PropertyInfo.GetGetMethod(true).IsStatic) IsVisible = false;
+                if (!PropertyInfo.CanRead || PropertyInfo.GetGetMethod(true).IsStatic) IsVisible = false;
             }
-            else if(FieldInfo != null)
+            else if (FieldInfo != null)
             {
-                ValueRenderer = Renderer.GetOrCreateRenderForType(FieldInfo.FieldType);
-                if(FieldInfo.IsInitOnly) IsReadOnly = true;
-                if(FieldInfo.IsStatic) IsVisible = false;
+                if (FieldInfo.IsInitOnly) IsReadOnly = true;
+                if (FieldInfo.IsStatic) IsVisible = false;
             }
-            else if(MethodInfo != null)
+            else if (MethodInfo != null)
             {
-                ValueRenderer = Renderer.GetOrCreateRenderForType(typeof(MethodInfo));
                 //TODO: arguments
             }
 

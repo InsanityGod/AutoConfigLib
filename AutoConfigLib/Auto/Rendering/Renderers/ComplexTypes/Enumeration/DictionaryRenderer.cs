@@ -1,14 +1,10 @@
 ﻿using AutoConfigLib.Auto.Generators;
-using AutoConfigLib.AutoConfig.Fields;
 using ImGuiNET;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Core.Tokens;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 {
@@ -100,7 +96,8 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    instance.Add(UniqueGenerator.GenerateUnique(instance.Keys), UniqueGenerator.GenerateUnique(Array.Empty<V>()));
+                    var uniqueKey = UniqueGenerator.GenerateUnique(instance.Keys, out var uniqueKeyLeft);
+                    if (uniqueKeyLeft) instance.Add(uniqueKey, UniqueGenerator.GenerateUnique(Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {

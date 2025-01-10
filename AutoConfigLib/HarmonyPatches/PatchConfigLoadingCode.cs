@@ -1,5 +1,4 @@
-﻿using AutoConfigLib.AutoConfig;
-using ConfigLib;
+﻿using ConfigLib;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -23,13 +22,13 @@ namespace AutoConfigLib.HarmonyPatches
                 .Where(assembly => !Array.Exists(assembly.GetReferencedAssemblies(), assembly => assembly.Name == typeof(ConfigLibModSystem).Assembly.GetName().Name))
                 .Select(assembly => (assembly, AssemblyDefinition.ReadAssembly(assembly.Location)));
 
-            foreach ((var assembly, var monoAssembly) in assembliesToScan) 
+            foreach ((var assembly, var monoAssembly) in assembliesToScan)
             {
                 try
                 {
                     ScanAndPatchAssembly(harmony, assembly, monoAssembly);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine($"Unnexpected exception occured during AutoConfigLib Patching of '{assembly.FullName}', exception: {ex}");
                 }

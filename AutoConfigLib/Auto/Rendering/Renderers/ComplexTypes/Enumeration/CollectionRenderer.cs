@@ -1,14 +1,10 @@
 ﻿using AutoConfigLib.Auto.Generators;
-using AutoConfigLib.AutoConfig.Fields;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Core.Tokens;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 {
@@ -90,7 +86,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
                 ImGuiHelper.SetExceptionToolTip(DeleteButtonFailureReason);
                 ImGui.EndDisabled();
-
             }
 
             ImGui.EndTable();
@@ -101,7 +96,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    instance.Add(UniqueGenerator.GenerateUnique<V>(AreItemsUnique ? instance : Array.Empty<V>()));
+                    instance.Add(UniqueGenerator.GenerateUnique<V>(AreItemsUnique ? instance : Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {

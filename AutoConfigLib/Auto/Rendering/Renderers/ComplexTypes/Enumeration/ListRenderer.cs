@@ -1,14 +1,9 @@
 ﻿using AutoConfigLib.Auto.Generators;
-using AutoConfigLib.AutoConfig.Fields;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Common;
-using YamlDotNet.Core.Tokens;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 {
@@ -90,7 +85,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    instance.Add(UniqueGenerator.GenerateUnique(Array.Empty<V>()));
+                    instance.Add(UniqueGenerator.GenerateUnique(Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {

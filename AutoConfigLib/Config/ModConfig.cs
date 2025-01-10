@@ -1,19 +1,11 @@
 ﻿using AutoConfigLib.Auto;
 using AutoConfigLib.Auto.Rendering;
-using AutoConfigLib.AutoConfig;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoConfigLib.Config
 {
     public class ModConfig
     {
-
         [Description("If set to true LoadModConfig will return the previous returned ref\n(this can be usefull in case your playing singlePlayer and the mod calls LoadModConfig on both client and server mod system)")]
         public bool AutoMergeClientServerConfig { get; set; } = true;
 

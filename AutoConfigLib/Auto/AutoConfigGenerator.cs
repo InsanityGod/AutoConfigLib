@@ -1,12 +1,7 @@
-﻿using AutoConfigLib.Auto.Rendering;
-using AutoConfigLib.AutoConfig;
-using ConfigLib;
-using System;
+﻿using ConfigLib;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Common;
 
 namespace AutoConfigLib.Auto
@@ -17,14 +12,14 @@ namespace AutoConfigLib.Auto
 
         public static T RegisterOrCollectConfigFile<T>(ICoreAPI api, string configPath, T configValue)
         {
-            if(FoundConfigsByPath.TryGetValue(configPath, out var config))
+            if (FoundConfigsByPath.TryGetValue(configPath, out var config))
             {
                 //TODO see if there is a better way to get matching mod
                 config.Mod ??= api.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
-                if(AutoConfigLibModSystem.Config.AutoMergeClientServerConfig) return (T)(config.ServerValue ?? config.ClientValue);
+                if (AutoConfigLibModSystem.Config.AutoMergeClientServerConfig) return (T)(config.ServerValue ?? config.ClientValue);
 
-                if(api.Side == EnumAppSide.Client) config.ClientValue ??= configValue;
-                if(api.Side == EnumAppSide.Server) config.ServerValue ??= configValue;
+                if (api.Side == EnumAppSide.Client) config.ClientValue ??= configValue;
+                if (api.Side == EnumAppSide.Server) config.ServerValue ??= configValue;
             }
             else
             {
@@ -35,18 +30,19 @@ namespace AutoConfigLib.Auto
                     Mod = api.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == typeof(T).Assembly)
                 };
 
-                if(api.Side == EnumAppSide.Client) config.ClientValue = configValue;
-                if(api.Side == EnumAppSide.Server) config.ServerValue = configValue;
+                if (api.Side == EnumAppSide.Client) config.ClientValue = configValue;
+                if (api.Side == EnumAppSide.Server) config.ServerValue = configValue;
                 FoundConfigsByPath.Add(configPath, config);
             }
             return configValue;
         }
 
+        //TODO filter configs that have been added through json api
         internal static void RegisterFoundConfigInConfigLib(ICoreAPI api)
         {
-            if(api.Side == EnumAppSide.Server) return; //No need to register on server
-            
-            foreach(var config in FoundConfigsByPath.Values)
+            if (api.Side == EnumAppSide.Server) return; //No need to register on server
+
+            foreach (var config in FoundConfigsByPath.Values)
             {
                 try
                 {
@@ -67,7 +63,7 @@ namespace AutoConfigLib.Auto
             value ??= config.ServerValue;
 
             config.PrimaryValue ??= value;
-            if(config.ServerValue != null && !ReferenceEquals(config.ServerValue, value))
+            if (config.ServerValue != null && !ReferenceEquals(config.ServerValue, value))
             {
                 api.Logger.Warning($"{config.Mod.Info.Name}', has a requested config '{config.Type}' on both local client and server, skipping auto config ('ClientServerConfigAutoMerge' can be enabled to prevent this)");
                 return;

@@ -1,17 +1,15 @@
 ﻿using ImGuiNET;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 {
     public class NullableValueRenderer<T> : IRenderer<T>
     {
+        
         public IRenderer NotNullableRenderer { get; private set; }
 
         public object DefaultValue { get; private set; }
+
         public void Initialize()
         {
             var notNullableType = Nullable.GetUnderlyingType(typeof(T));
@@ -23,7 +21,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
         public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
             bool isNull = instance == null;
-            if(isNull)
+            if (isNull)
             {
                 ImGui.BeginDisabled(true);
                 NotNullableRenderer.RenderObject(DefaultValue, id, fieldDefinition);
