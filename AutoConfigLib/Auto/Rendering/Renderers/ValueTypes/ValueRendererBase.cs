@@ -1,0 +1,26 @@
+﻿using ImGuiNET;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
+{
+    public abstract class ValueRendererBase<T> : IRenderer<T>
+    {
+        public abstract void RenderValue(ref T instance, string id, FieldRenderDefinition fieldDefinition = null);
+
+        public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null)
+        {
+            var original = instance;
+
+            RenderValue(ref instance, id, fieldDefinition);
+            if(!ImGui.IsItemDeactivated())
+            {
+                return original; //Only sends new value when update is complete
+            }
+            return instance;
+        }
+    }
+}

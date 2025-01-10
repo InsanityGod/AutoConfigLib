@@ -5,62 +5,74 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Linq;
+using System.Reflection;
 using Vintagestory.API.Common;
 
 namespace AutoConfigLib.HarmonyPatches
 {
     public static class PatchConfigLoadingCode
     {
-        public static void PatchConfigStuff(ICoreAPI api, Harmony harmony)
+        public static void FindAndPatchMethods(Harmony harmony)
         {
-            var modAssemblies = api.ModLoader.Mods
-                .Where(mod => mod.Systems.Count > 0)
-                .Select(mod => mod.Systems.First().GetType().Assembly)
+            var assembliesToScan = AppDomain.CurrentDomain.GetAssemblies()
+                //Skip any dynamic assembly (cause I don't know how to read the assembly definition of these)
+                .Where(assembly => !string.IsNullOrEmpty(assembly.Location))
+                //Skip anything that does not reference vintage story
+                .Where(assembly => Array.Exists(assembly.GetReferencedAssemblies(), assembly => assembly.Name == typeof(ModSystem).Assembly.GetName().Name))
+                //Skip anything that references ConfigLib (As they should have a manual implementation)
                 .Where(assembly => !Array.Exists(assembly.GetReferencedAssemblies(), assembly => assembly.Name == typeof(ConfigLibModSystem).Assembly.GetName().Name))
                 .Select(assembly => (assembly, AssemblyDefinition.ReadAssembly(assembly.Location)));
 
-            foreach ((var assembly, var monoAssembly) in modAssemblies)
+            foreach ((var assembly, var monoAssembly) in assembliesToScan) 
             {
-                foreach (var module in monoAssembly.Modules)
+                try
                 {
-                    foreach (var type in module.Types)
+                    ScanAndPatchAssembly(harmony, assembly, monoAssembly);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Unnexpected exception occured during AutoConfigLib Patching of '{assembly.FullName}', exception: {ex}");
+                }
+            }
+        }
+
+        private static void ScanAndPatchAssembly(Harmony harmony, Assembly assembly, AssemblyDefinition monoAssembly)
+        {
+            foreach (var module in monoAssembly.Modules)
+            {
+                foreach (var type in module.Types)
+                {
+                    foreach (var method in type.Methods)
                     {
-                        foreach (var method in type.Methods)
+                        if (method.HasBody)
                         {
-                            if (method.HasBody)
+                            // Access and print the method body
+                            foreach (var instruction in method.Body.Instructions)
                             {
-                                // Access and print the method body
-                                foreach (var instruction in method.Body.Instructions)
+                                if (instruction.OpCode != OpCodes.Callvirt || instruction.Operand is not MethodReference methodRef || !methodRef.IsGenericInstance || methodRef.Name != nameof(ICoreAPICommon.LoadModConfig)) continue;
+
+                                var realMethods = assembly.GetTypes()
+                                    .First(realType => realType.Name == type.Name)
+                                    .GetMethods(AccessTools.allDeclared)
+                                    .Where(realMethod => realMethod.Name == method.Name)
+                                    .ToList();
+                                var realMethod = realMethods.FirstOrDefault();
+                                if (realMethods.Count != 1)
                                 {
-                                    if (instruction.OpCode == OpCodes.Callvirt && instruction.Operand is MethodReference methodRef)
-                                    {
-                                        if (methodRef.IsGenericInstance && methodRef.Name == nameof(ICoreAPICommon.LoadModConfig))
-                                        {
-                                            var realMethods = assembly.GetTypes()
-                                                .First(realType => realType.Name == type.Name)
-                                                .GetMethods(AccessTools.allDeclared)
-                                                .Where(realMethod => realMethod.Name == method.Name)
-                                                .ToList();
-                                            var realMethod = realMethods.FirstOrDefault();
-                                            if (realMethods.Count != 1)
-                                            {
-                                                api.Logger.Warning($"Failed to bind AutoConfig for {assembly.GetName()} in method '{method.FullName}'");
-                                                break;
-                                            }
-
-                                            try
-                                            {
-                                                harmony.Patch(realMethod, transpiler: new HarmonyMethod(AccessTools.Method(typeof(ConfigGenerator), nameof(ConfigGenerator.Transpiler))));
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                api.Logger.Warning($"failed to inject auto config for {type.Name} in method {realMethod.Name}, exception: {ex}");
-                                            }
-
-                                            break;
-                                        }
-                                    }
+                                    Console.WriteLine($"AutoConfig: Failed to find real method for {assembly.FullName} {method.FullName}");
+                                    break;
                                 }
+
+                                try
+                                {
+                                    harmony.Patch(realMethod, transpiler: new HarmonyMethod(AccessTools.Method(typeof(ConfigInterception), nameof(ConfigInterception.Transpiler))));
+                                }
+                                catch
+                                {
+                                    Console.WriteLine($"AutoConfig failed to inject auto config for {assembly.FullName} {type.Name} in method {realMethod.Name}");
+                                }
+
+                                break;
                             }
                         }
                     }

@@ -9,7 +9,7 @@ namespace AutoConfigLib.AutoConfig
     {
         public Type Type { get; internal set; }
 
-        public string Filename { get; internal set; }
+        public string configPath { get; internal set; }
 
         public object ClientValue { get; internal set; }
 
@@ -19,6 +19,6 @@ namespace AutoConfigLib.AutoConfig
 
         public Mod Mod { get; internal set; }
 
-        public void Save(ICoreAPI api) => api.StoreModConfig(new JsonObject(JToken.FromObject(PrimaryValue)), Filename);
+        public void Save(ICoreAPI api) => api.StoreModConfig(new JsonObject(JToken.FromObject(PrimaryValue)), configPath);
     }
 }

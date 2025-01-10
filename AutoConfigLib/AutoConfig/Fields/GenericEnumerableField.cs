@@ -1,4 +1,4 @@
-﻿using AutoConfigLib.AutoConfig.Generators;
+﻿using AutoConfigLib.Auto.Generators;
 using HarmonyLib;
 using ImGuiNET;
 using System;

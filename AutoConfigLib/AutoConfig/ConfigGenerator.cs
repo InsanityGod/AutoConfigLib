@@ -15,6 +15,7 @@ namespace AutoConfigLib.AutoConfig
     {
         public static Dictionary<string, Config> Configs { get; internal set; }
 
+        [Obsolete]
         public static T GetConfigOverride<T>(ICoreAPICommon api, string fileName)
         {
             var result = api.LoadModConfig<T>(fileName);
@@ -24,7 +25,7 @@ namespace AutoConfigLib.AutoConfig
             {
                 var config = new Config
                 {
-                    Filename = fileName,
+                    configPath = fileName,
                     Type = typeof(T),
                 };
 
@@ -37,35 +38,12 @@ namespace AutoConfigLib.AutoConfig
             {
                 var config = Configs[fileName];
 
-                if(AutoConfigLibModSystem.Config.ClientServerConfigAutoMerge) return (T)(config.ServerValue ?? config.ClientValue);
+                if(AutoConfigLibModSystem.Config.AutoMergeClientServerConfig) return (T)(config.ServerValue ?? config.ClientValue);
 
                 if(coreApi.Side == EnumAppSide.Client) config.ClientValue ??= result;
                 if(coreApi.Side == EnumAppSide.Server) config.ServerValue ??= result;
             }
             return result;
-        }
-
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            var codes = instructions.ToList();
-
-            var targetMethod = typeof(ICoreAPICommon).GetMethods().Single(method => method.Name == nameof(ICoreAPICommon.LoadModConfig) && method.IsGenericMethodDefinition);
-
-            for (var i = 0; i < codes.Count; i++)
-            {
-                var code = codes[i];
-                if (code.opcode == OpCodes.Callvirt && code.operand is MethodInfo methodInfo && methodInfo.IsGenericMethod)
-                {
-                    var genericMethod = methodInfo.GetGenericMethodDefinition();
-                    if (genericMethod != targetMethod) continue;
-
-                    var method = AccessTools.Method(typeof(ConfigGenerator), nameof(GetConfigOverride))
-                        .MakeGenericMethod(methodInfo.GetGenericArguments());
-                    code.opcode = OpCodes.Call;
-                    code.operand = method;
-                }
-            }
-            return codes;
         }
 
         public static void GenerateDefaultConfigLib(ICoreAPI api)
@@ -98,52 +76,17 @@ namespace AutoConfigLib.AutoConfig
                 var extraStr = string.Empty;
                 if(Configs.Values.Count(conf => conf.Mod?.Info.ModID == config.Mod.Info.ModID) > 1)
                 {
-                    extraStr = " - " + config.Filename.Split('.')[0];
+                    extraStr = " - " + config.configPath.Split('.')[0];
                 }
 
                 configLib.RegisterCustomConfig($"{config.Mod.Info.ModID}{extraStr} (auto)", (string id, ControlButtons buttons) => HandleConfigButtons(api, config, id, buttons));
             }
 
-            if(AutoConfigLibModSystem.Config.DoNotTouchThis) DoNotTouchThis(api);
-            if(AutoConfigLibModSystem.Config.LoadWorldConfig) WorldConfig.LoadWorldConfig(api);
-        }
-
-        internal static bool TouchedDoNotTouch = false;
-        public static void DoNotTouchThis(ICoreAPI api)
-        {
-            if(TouchedDoNotTouch) return;
-            TouchedDoNotTouch = true;
-
-            var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
-
-            if(AutoConfigLibModSystem.CoreServerAPI != null)
-            {
-                foreach(var mod in AutoConfigLibModSystem.CoreServerAPI.ModLoader.Mods)
-                {
-                    foreach(var system in mod.Systems)
-                    {
-                        configLib.RegisterCustomConfig($"{mod.Info.ModID} - server - {system.GetType().Name} (auto)" , (string id, ControlButtons buttons) => AddType(system.GetType(), system, id));
-                    }
-                }
-            }
-
-            if(AutoConfigLibModSystem.CoreClientAPI.ModLoader.Mods != null)
-            {
-                foreach(var mod in AutoConfigLibModSystem.CoreClientAPI.ModLoader.Mods)
-                {
-                    foreach(var system in mod.Systems)
-                    {
-                        configLib.RegisterCustomConfig($"{mod.Info.ModID} - client - {system.GetType().Name} (auto)" , (string id, ControlButtons buttons) => AddType(system.GetType(), system, id));
-                    }
-                }
-            }
+            if(AutoConfigLibModSystem.Config.LoadWorldConfig) WorldConfigEditor.LoadWorldConfig(api);
         }
 
         public static void HandleConfigButtons(ICoreAPI api, Config config, string id, ControlButtons buttons)
         {
-            if(!TouchedDoNotTouch && AutoConfigLibModSystem.Config.DoNotTouchThis) DoNotTouchThis(api);
-            if(!WorldConfig.worldConfigLoaded && AutoConfigLibModSystem.Config.LoadWorldConfig) WorldConfig.LoadWorldConfig(api);
-
             if (buttons.Save)
             {
                 config.Save(api);
@@ -165,7 +108,7 @@ namespace AutoConfigLib.AutoConfig
                             .First(method => method.Name == nameof(ICoreAPICommon.LoadModConfig) && method.IsGenericMethod)
                             .MakeGenericMethod(config.Type);
 
-                        newInstance = method.Invoke(api, new object[] { config.Filename });
+                        newInstance = method.Invoke(api, new object[] { config.configPath });
                     }
 
                     foreach (var member in config.Type.GetMembers())

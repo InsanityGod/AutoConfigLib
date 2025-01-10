@@ -127,7 +127,7 @@ namespace AutoConfigLib.AutoConfig.Fields
                 bool wasNull = stringValue == null;
                 if(wasNull) stringValue = string.Empty;
 
-                ImGui.InputText(id, ref stringValue, (uint)AutoConfigLibModSystem.Config.MaxStringLength);
+                ImGui.InputText(id, ref stringValue, (uint)AutoConfigLibModSystem.Config.DefaultMaxStringLength);
                 value = (string.IsNullOrEmpty(stringValue) && wasNull) ?
                     (T)(object)null :
                     (T)(object)stringValue;
