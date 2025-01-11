@@ -25,11 +25,11 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             ValueRenderer = Renderer.GetOrCreateRenderForType(typeof(V));
 
             var addFailureReasonBuilder = new StringBuilder();
-            if (!UniqueGenerator.CanGenerateUnique<K>())
+            if (!UniqueGenerator.CanGenerate<K>())
             {
                 addFailureReasonBuilder.AppendLine($"Cannot initialize dictionary key of type '{typeof(K)}'");
             }
-            if (!UniqueGenerator.CanGenerateUnique<V>())
+            if (!UniqueGenerator.CanGenerate<V>())
             {
                 addFailureReasonBuilder.AppendLine($"Cannot initialize dictionary item of type '{typeof(V)}'");
             }
@@ -41,13 +41,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
         public override T RenderValue(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            if (fieldDefinition != null)
-            {
-                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse")) return instance;
-                ImGui.Indent();
-            }
-
-            ImGui.BeginTable($"##{id}-dict", 3, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoPadInnerX);
+            ImGui.BeginTable($"##{id}-dict", 3, ImGuiTableFlags.NoPadInnerX);
 
             ImGui.TableSetupColumn($"##{id}-dict-key-col", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn($"##{id}-dict-val-col", ImGuiTableColumnFlags.WidthStretch);
@@ -60,6 +54,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(-1);
+
                 var key = KeyRenderer.RenderObject(entry.Key, $"{id}-dict-key-{row}");
 
                 if (!key.Equals(entry.Key))
@@ -79,6 +74,13 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
                 ImGui.SetNextItemWidth(-1);
                 if (!UseCollapseHeaderForValues || ImGui.CollapsingHeader($"Content##{id}-dict-colapse-{row}"))
                 {
+                    if(ValueRenderer is ISupportGroupDisplacement groupDisplacementSupport)
+                    {
+                        groupDisplacementSupport.UseGroupDisplacement = true;
+                        groupDisplacementSupport.GroupDisplacementX = ImGui.GetColumnWidth(0);
+                        groupDisplacementSupport.GroupExtraSpaceX = ImGui.GetColumnWidth(2);
+                    }
+
                     var value = ValueRenderer.RenderObject(entry.Value, $"{id}-dict-value-{row}");
 
                     if (!value.Equals(entry.Value)) instance[(K)key] = (V)value;
@@ -96,8 +98,8 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    var uniqueKey = UniqueGenerator.GenerateUnique(instance.Keys, out var uniqueKeyLeft);
-                    if (uniqueKeyLeft) instance.Add(uniqueKey, UniqueGenerator.GenerateUnique(Array.Empty<V>(), out _));
+                    var uniqueKey = UniqueGenerator.Generate(instance.Keys, out var uniqueKeyLeft);
+                    if (uniqueKeyLeft) instance.Add(uniqueKey, UniqueGenerator.Generate(Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {
@@ -108,7 +110,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             ImGuiHelper.SetExceptionToolTip(AddButtonFailureReason);
             ImGui.EndDisabled();
 
-            if (fieldDefinition != null) ImGui.Unindent();
             return instance;
         }
     }

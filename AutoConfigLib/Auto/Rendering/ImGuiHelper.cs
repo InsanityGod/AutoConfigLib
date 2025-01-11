@@ -41,20 +41,20 @@ namespace AutoConfigLib.Auto.Rendering
                 new Vector2(cursorPos.X, cursorPos.Y + lineHeight / 2.0f), // Start position
                 new Vector2(cursorPos.X + separatorWidth - style.ItemSpacing.X, cursorPos.Y + lineHeight / 2.0f), // End position
                 ImGui.GetColorU32(ImGuiCol.Separator),
-                1.0f // Line thickness
+                4.0f // Line thickness
             );
 
             // Render the text
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + separatorWidth); // Move cursor for the text
             ImGui.TextUnformatted(text);
-
+            ImGui.SameLine();
             // Draw right separator
             var textEndPos = ImGui.GetCursorScreenPos(); // Position after text
             ImGui.GetWindowDrawList().AddLine(
                 new Vector2(textEndPos.X + style.ItemSpacing.X, cursorPos.Y + lineHeight / 2.0f), // Start position
                 new Vector2(textEndPos.X + separatorWidth - style.ItemSpacing.X, cursorPos.Y + lineHeight / 2.0f), // End position
                 ImGui.GetColorU32(ImGuiCol.Separator),
-                1.0f // Line thickness
+                4.0f // Line thickness
             );
 
             // Add spacing below the separator text
@@ -93,6 +93,27 @@ namespace AutoConfigLib.Auto.Rendering
             ImGui.PushStyleColor(ImGuiCol.PopupBg, new Vector4(originalColor.X, originalColor.Y, originalColor.Z, 255));
             ImGui.SetTooltip(comment);
             ImGui.PopStyleColor();
+        }
+
+        public static T ResetValueButton<T>(T instance, string id, FieldRenderDefinition fieldDefinition)
+        {
+            if(fieldDefinition?.DefaultValue != null)
+            {
+                if (ImGui.Button($"~##{id}-reset-button"))
+                {
+                    try
+                    {
+                        return (T)fieldDefinition.DefaultValue; //TODO test
+                    }
+                    catch
+                    {
+                        //Default value was incorrectly configured
+                    }
+                }
+                Tooltip($"Reset to default: {fieldDefinition.DefaultValue}");
+                ImGui.SameLine();
+            }
+            return instance;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 
         public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            var original = instance;
+            var original = ImGuiHelper.ResetValueButton(instance, id, fieldDefinition);
 
             RenderValue(ref instance, id, fieldDefinition);
             if (!ImGui.IsItemDeactivated())

@@ -13,7 +13,7 @@ namespace AutoConfigLib
 {
     public class AutoConfigLibModSystem : ModSystem
     {
-        private readonly Harmony harmony;
+        private static Harmony harmony = new("autoconfiglib");
 
         public const string ConfigName = "AutoConfigLibConfig.json";
 
@@ -23,8 +23,6 @@ namespace AutoConfigLib
             Renderer.CachedRenderesByType ??= new();
             if (!Harmony.HasAnyPatches("autoconfiglib"))
             {
-                harmony = new Harmony("autoconfiglib");
-
                 harmony.PatchAllUncategorized();
 
                 PatchConfigLoadingCode.FindAndPatchMethods(harmony);
@@ -63,6 +61,7 @@ namespace AutoConfigLib
                     Config = new();
                 }
             }
+            if(api.Side == EnumAppSide.Client && Config.ConfigLibWindowImprovements) harmony?.PatchCategory("ConfigLibWindowImprovements");
 
             //TODO: maybe allow for localizing config into world settings
         }
@@ -71,7 +70,7 @@ namespace AutoConfigLib
         {
             var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
             if (configLib == null) return;
-            if (Config.LoadWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
+            if (Config.RegisterWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
             configLib.ConfigWindowClosed += Renderer.ClearCache;
         }
 
@@ -94,7 +93,7 @@ namespace AutoConfigLib
             base.AssetsFinalize(api);
             if (api.Side == EnumAppSide.Server) return;
 
-            AutoConfigGenerator.RegisterFoundConfigInConfigLib(api);
+            AutoConfigGenerator.RegisterFoundConfigsInConfigLib(api);
             //TODO: see if we can patch the modloader to call this at the end of mod loading cyclus instead (just to make extra sure everthing of other mods is initialized)
         }
 

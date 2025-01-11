@@ -24,7 +24,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
             var addFailureReasonBuilder = new StringBuilder();
 
-            if (!UniqueGenerator.CanGenerateUnique<V>())
+            if (!UniqueGenerator.CanGenerate<V>())
             {
                 addFailureReasonBuilder.AppendLine($"Cannot initialize array item of type '{typeof(V)}'");
             }
@@ -36,13 +36,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
         public override V[] RenderValue(V[] instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            if (fieldDefinition != null)
-            {
-                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse")) return instance;
-                ImGui.Indent();
-            }
-
-            ImGui.BeginTable($"##{id}-array", 2, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoPadInnerX);
+            ImGui.BeginTable($"##{id}-array", 2, ImGuiTableFlags.NoPadInnerX);
 
             ImGui.TableSetupColumn($"##{id}-array-val-col", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn($"##{id}-array-del-col", ImGuiTableColumnFlags.WidthFixed);
@@ -55,7 +49,9 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
                 if (!UseCollapseHeaderForValues || ImGui.CollapsingHeader($"Content##{id}-array-colapse-{row}"))
                 {
+                    if(UseCollapseHeaderForValues) ImGui.Indent();
                     instance[row] = (V)ValueRenderer.RenderObject(instance[row], $"{id}-array-value-{row}");
+                    if(UseCollapseHeaderForValues) ImGui.Unindent();
                 }
 
                 ImGui.TableNextColumn();
@@ -86,7 +82,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    instance = instance.Append(UniqueGenerator.GenerateUnique(Array.Empty<V>(), out _));
+                    instance = instance.Append(UniqueGenerator.Generate(Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {
@@ -97,7 +93,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             ImGuiHelper.SetExceptionToolTip(AddButtonFailureReason);
             ImGui.EndDisabled();
 
-            if (fieldDefinition != null) ImGui.Unindent();
             return instance;
         }
     }

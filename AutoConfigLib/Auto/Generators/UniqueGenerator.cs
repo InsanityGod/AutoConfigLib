@@ -7,12 +7,12 @@ namespace AutoConfigLib.Auto.Generators
 {
     public static class UniqueGenerator
     {
-        public static T GenerateUnique<T>(IEnumerable<T> existing, out bool success)
+        public static T Generate<T>(IEnumerable<T> existing, out bool success)
         {
             success = true;
             if (typeof(T) != typeof(string))
             {
-                if (!typeof(T).IsValueType) return Activator.CreateInstance<T>();
+                if (!typeof(T).IsValueType) return InstanceGenerator.Generate<T>();
 
                 T result = default;
                 if (!existing.Contains(result)) return result;
@@ -58,7 +58,7 @@ namespace AutoConfigLib.Auto.Generators
             throw new InvalidOperationException($"Cannot create unique instance of type '{typeof(T)}'");
         }
         
-        public static bool CanGenerateUnique<T>()
+        public static bool CanGenerate<T>()
         {
             if (typeof(T).IsInterface || typeof(T).IsAbstract) return false;
             if (typeof(T) == typeof(string)) return true;
@@ -66,15 +66,7 @@ namespace AutoConfigLib.Auto.Generators
             if (typeof(T).IsNumber()) return true;
             if (typeof(T).BaseType == typeof(Enum)) return true;
 
-            try
-            {
-                Activator.CreateInstance<T>();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return InstanceGenerator.CanGenerate<T>();
         }
     }
 }

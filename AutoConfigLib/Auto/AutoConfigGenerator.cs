@@ -37,20 +37,22 @@ namespace AutoConfigLib.Auto
             return configValue;
         }
 
-        //TODO filter configs that have been added through json api
-        internal static void RegisterFoundConfigInConfigLib(ICoreAPI api)
+        internal static void RegisterFoundConfigsInConfigLib(ICoreAPI api)
         {
             if (api.Side == EnumAppSide.Server) return; //No need to register on server
 
+            var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
             foreach (var config in FoundConfigsByPath.Values)
             {
                 try
                 {
+                    var domain = config.Mod?.Info?.ModID;
+                    if(!string.IsNullOrEmpty(domain) && configLib.Domains.Contains(domain)) continue; //In this case they have config support through json api
                     RegisterConfigInConfigLib(api, config);
                 }
                 catch
                 {
-                    //TODO make a list of these and show them inside config tab
+                    //TODO centralize logging for debug/display purposes
                     api.Logger.Warning($"Failed to load AutoConfig for '{config.ConfigPath}' ({config.Mod?.Info?.Name ?? "Unknown Mod"})");
                 }
             }
@@ -65,7 +67,7 @@ namespace AutoConfigLib.Auto
             config.PrimaryValue ??= value;
             if (config.ServerValue != null && !ReferenceEquals(config.ServerValue, value))
             {
-                api.Logger.Warning($"{config.Mod.Info.Name}', has a requested config '{config.Type}' on both local client and server, skipping auto config ('ClientServerConfigAutoMerge' can be enabled to prevent this)");
+                api.Logger.Warning($"{config.Mod?.Info?.Name}', has a requested config '{config.Type}' on both local client and server, skipping auto config ('ClientServerConfigAutoMerge' can be enabled to prevent this)");
                 return;
             }
 

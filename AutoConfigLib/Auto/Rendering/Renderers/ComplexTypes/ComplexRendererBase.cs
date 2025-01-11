@@ -1,27 +1,22 @@
-﻿using ImGuiNET;
+﻿using AutoConfigLib.Auto.Generators;
+using ImGuiNET;
 using System;
+using System.Numerics;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
 {
-    public abstract class ComplexRendererBase<T> : IRenderer<T>
+    public abstract class ComplexRendererBase<T> : IRenderer<T>, ISupportGroupDisplacement
     {
         
         public bool CanBeInitialized { get; private set; }
 
         public bool ShouldBeInsideCollapseHeader => true;
 
-        public virtual void Initialize()
-        {
-            try
-            {
-                Activator.CreateInstance<T>();
-                CanBeInitialized = true;
-            }
-            catch
-            {
-                CanBeInitialized = false;
-            }
-        }
+        public bool UseGroupDisplacement { get; set; }
+        public float GroupDisplacementX { get; set; }
+        public float GroupExtraSpaceX { get; set; }
+
+        public virtual void Initialize() => CanBeInitialized = InstanceGenerator.CanGenerate<T>();
 
         public abstract T RenderValue(T instance, string id, FieldRenderDefinition fieldDefinition = null);
 
@@ -31,21 +26,55 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
             {
                 if (AutoConfigLibModSystem.Config.AutoInitializeNullFields)
                 {
-                    if (CanBeInitialized) return Activator.CreateInstance<T>();
+                    if (CanBeInitialized) return InstanceGenerator.Generate<T>();
                     ImGui.TextDisabled($"type of {fieldDefinition.Name ?? "unknown"} field cannot be initialized ({typeof(T)})");
                     return instance;
                 }
                 ImGui.BeginDisabled(!CanBeInitialized);
                 if (ImGui.Button($"Initialize {fieldDefinition.Name}##{id}-initialize-button"))
                 {
-                    instance = Activator.CreateInstance<T>();
+                    instance = InstanceGenerator.Generate<T>();
                 }
                 ImGuiHelper.SetExceptionToolTip(CanBeInitialized ? null : $"type of {fieldDefinition.Name ?? "unknown"} field cannot be initialized ({typeof(T)})");
                 ImGui.EndDisabled();
                 return instance;
             }
 
-            return RenderValue(instance, id, fieldDefinition);
+            if (fieldDefinition != null)
+            {
+                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse")) return instance;
+                ImGui.Indent();
+            }
+
+            //Localize for recursive rendering support
+            var isUsingGroup = UseGroupDisplacement;
+            UseGroupDisplacement = false;
+
+            var cursorPos = ImGui.GetCursorPos();
+            if (isUsingGroup)
+            {
+                ImGui.SetCursorPosX(cursorPos.X - GroupDisplacementX);
+                ImGui.PopClipRect();
+                
+                var min = new Vector2(-1, -1);
+                var max = new Vector2(float.MaxValue, float.MaxValue);
+                ImGui.PushClipRect(min, max, true);
+                ImGui.BeginGroup(); //TODO: maybe see if we can get this to use the sapce of the delete column as well
+                ImGui.Indent();
+            }
+
+            var result = RenderValue(instance, id, fieldDefinition);
+
+            if (isUsingGroup)
+            {
+                ImGui.Unindent();
+                ImGui.EndGroup();
+                ImGui.SetCursorPosX(cursorPos.X);
+            }
+
+            if (fieldDefinition != null) ImGui.Unindent();
+            
+            return result;
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Numerics;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AutoConfigLib.Auto.Rendering
 {
@@ -8,15 +10,18 @@ namespace AutoConfigLib.Auto.Rendering
     {
         public string Name { get; set; }
 
+        public string Category { get; set; }
+        
         public string Description { get; set; }
 
-        public string Category { get; set; }
+        public object DefaultValue { get; set; }
 
         public string SubId { get; set; }
 
         public bool IsReadOnly { get; set; }
 
         public bool IsVisible { get; set; } = true;
+        //TODO use static int to see if still valid!
 
         private IRenderer cachedRenderer;
         public IRenderer ValueRenderer
@@ -81,13 +86,11 @@ namespace AutoConfigLib.Auto.Rendering
             MethodInfo = memberInfo as MethodInfo;
 
             var nameAttr = memberInfo.GetCustomAttribute<DisplayNameAttribute>();
-            Name = nameAttr != null ? nameAttr.DisplayName : Renderer.GetHumanReadable(memberInfo.Name);
-
-            var descriptionAttr = memberInfo.GetCustomAttribute<DescriptionAttribute>();
-            Description = descriptionAttr?.Description;
-
-            var categoryAttr = memberInfo.GetCustomAttribute<CategoryAttribute>();
-            Category = categoryAttr?.Category ?? string.Empty;
+            Name = string.IsNullOrEmpty(nameAttr?.DisplayName) ? Renderer.GetHumanReadable(memberInfo.Name) : nameAttr.DisplayName;
+            
+            Category = memberInfo.GetCustomAttribute<CategoryAttribute>()?.Category ?? string.Empty;
+            Description = memberInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            DefaultValue = memberInfo.GetCustomAttribute<DefaultValueAttribute>()?.Value;
 
             var readonlyAttr = memberInfo.GetCustomAttribute<ReadOnlyAttribute>();
             if (readonlyAttr != null) IsReadOnly = readonlyAttr.IsReadOnly;
@@ -110,6 +113,10 @@ namespace AutoConfigLib.Auto.Rendering
             else if (MethodInfo != null)
             {
                 //TODO: arguments
+            }
+            else
+            {
+                IsVisible = false;
             }
 
             //TODO button renderer

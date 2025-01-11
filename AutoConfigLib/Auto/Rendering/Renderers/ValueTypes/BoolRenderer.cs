@@ -2,14 +2,11 @@
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 {
-    public class BoolRenderer : IRenderer<bool>
+    public class BoolRenderer : ValueRendererBase<bool>
     {
-        
-
-        public bool Render(bool instance, string id, FieldRenderDefinition fieldDefinition = null)
+        public override void RenderValue(ref bool instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
             ImGui.Checkbox($"{fieldDefinition?.Name}##{id}", ref instance);
-            return instance;
         }
     }
 }

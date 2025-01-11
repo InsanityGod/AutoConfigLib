@@ -5,7 +5,13 @@ namespace AutoConfigLib.Auto.Rendering
 {
     public interface IRenderer
     {
+        /// <summary>
+        /// Wether readonly should be ignored when deciding to disable object
+        /// (This is usually only true for complex types as they don't need to be written to for changes)
+        /// </summary>
         public bool IgnoreReadOnly => false;
+
+        public bool IsComplex => false;
 
         public bool ShouldBeInsideCollapseHeader => false;
 

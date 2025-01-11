@@ -42,8 +42,6 @@ namespace AutoConfigLib.Auto.Rendering
             LoadedStaticImplementations = false;
         }
 
-        //TODO world config
-        //TODO see if I can have renderer type be created async
         public static IRenderer GetOrCreateRenderForType(Type type)
         {
             if (!LoadedStaticImplementations) LoadStaticImplementations();
@@ -60,10 +58,10 @@ namespace AutoConfigLib.Auto.Rendering
             var collectionInterface = type.GetFirstGenericInterface(typeof(ICollection<>));
             if (collectionInterface != null) result ??= (IRenderer)Activator.CreateInstance(typeof(CollectionRenderer<,>).MakeGenericType(type, collectionInterface.GenericTypeArguments[0]));
 
-            if (type.BaseType == typeof(Enum)) result ??= (IRenderer)Activator.CreateInstance(typeof(EnumRenderer<>).MakeGenericType(type));
-
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null && nullableType.IsValueType) result ??= (IRenderer)Activator.CreateInstance(typeof(NullableValueRenderer<>).MakeGenericType(type));
+
+            if (type.BaseType == typeof(Enum)) result ??= (IRenderer)Activator.CreateInstance(typeof(EnumRenderer<>).MakeGenericType(type));
 
             if (!type.IsValueType && collectionInterface == null) result ??= (IRenderer)Activator.CreateInstance(typeof(ClassRenderer<>).MakeGenericType(type));
 

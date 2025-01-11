@@ -25,7 +25,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
             var addFailureReasonBuilder = new StringBuilder();
 
-            if (!UniqueGenerator.CanGenerateUnique<V>())
+            if (!UniqueGenerator.CanGenerate<V>())
             {
                 addFailureReasonBuilder.AppendLine($"Cannot initialize collection item of type '{typeof(V)}'");
             }
@@ -39,13 +39,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
         public override T RenderValue(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            if (fieldDefinition != null)
-            {
-                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse")) return instance;
-                ImGui.Indent();
-            }
-
-            ImGui.BeginTable($"##{id}-collection", 2, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoPadInnerX);
+            ImGui.BeginTable($"##{id}-collection", 2, ImGuiTableFlags.NoPadInnerX);
 
             ImGui.TableSetupColumn($"##{id}-collection-val-col", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn($"##{id}-collection-del-col", ImGuiTableColumnFlags.WidthFixed);
@@ -59,6 +53,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
                 if (!UseCollapseHeaderForValues || ImGui.CollapsingHeader($"Content##{id}-collection-colapse-{row}"))
                 {
+                    if(UseCollapseHeaderForValues) ImGui.Indent();
                     var newItem = (V)ValueRenderer.RenderObject(item, $"{id}-collection-value-{row}");
 
                     if (!newItem.Equals(item))
@@ -66,6 +61,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
                         instance.Remove(item);
                         instance.Add(newItem);
                     }
+                    if(UseCollapseHeaderForValues) ImGui.Unindent();
                 }
 
                 ImGui.TableNextColumn();
@@ -96,7 +92,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    instance.Add(UniqueGenerator.GenerateUnique<V>(AreItemsUnique ? instance : Array.Empty<V>(), out _));
+                    instance.Add(UniqueGenerator.Generate<V>(AreItemsUnique ? instance : Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {
@@ -107,7 +103,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             ImGuiHelper.SetExceptionToolTip(AddButtonFailureReason);
             ImGui.EndDisabled();
 
-            if (fieldDefinition != null) ImGui.Unindent();
             return instance;
         }
     }

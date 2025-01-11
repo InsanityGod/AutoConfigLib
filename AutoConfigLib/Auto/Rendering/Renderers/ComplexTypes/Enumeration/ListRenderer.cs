@@ -23,7 +23,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
             var addFailureReasonBuilder = new StringBuilder();
 
-            if (!UniqueGenerator.CanGenerateUnique<V>())
+            if (!UniqueGenerator.CanGenerate<V>())
             {
                 addFailureReasonBuilder.AppendLine($"Cannot initialize list item of type '{typeof(V)}'");
             }
@@ -35,13 +35,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
 
         public override T RenderValue(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            if (fieldDefinition != null)
-            {
-                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse")) return instance;
-                ImGui.Indent();
-            }
-
-            ImGui.BeginTable($"##{id}-list", 2, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoPadInnerX);
+            ImGui.BeginTable($"##{id}-list", 2, ImGuiTableFlags.NoPadInnerX);
 
             ImGui.TableSetupColumn($"##{id}-list-val-col", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn($"##{id}-list-del-col", ImGuiTableColumnFlags.WidthFixed);
@@ -85,7 +79,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             {
                 try
                 {
-                    instance.Add(UniqueGenerator.GenerateUnique(Array.Empty<V>(), out _));
+                    instance.Add(UniqueGenerator.Generate(Array.Empty<V>(), out _));
                 }
                 catch (Exception ex)
                 {
@@ -96,7 +90,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
             ImGuiHelper.SetExceptionToolTip(AddButtonFailureReason);
             ImGui.EndDisabled();
 
-            if (fieldDefinition != null) ImGui.Unindent();
             return instance;
         }
     }
