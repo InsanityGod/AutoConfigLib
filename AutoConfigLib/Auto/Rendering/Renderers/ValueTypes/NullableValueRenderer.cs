@@ -20,6 +20,8 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 
         public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
+            if(fieldDefinition != null) instance = ImGuiHelper.ResetValueButton(instance, id, fieldDefinition);
+
             bool isNull = instance == null;
             if (isNull)
             {

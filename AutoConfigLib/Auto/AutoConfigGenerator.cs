@@ -60,14 +60,13 @@ namespace AutoConfigLib.Auto
 
         public static void RegisterConfigInConfigLib(ICoreAPI api, ConfigDefinition config)
         {
-            //TODO cleanup
             var value = config.ClientValue;
             value ??= config.ServerValue;
 
             config.PrimaryValue ??= value;
             if (config.ServerValue != null && !ReferenceEquals(config.ServerValue, value))
             {
-                api.Logger.Warning($"{config.Mod?.Info?.Name}', has a requested config '{config.Type}' on both local client and server, skipping auto config ('ClientServerConfigAutoMerge' can be enabled to prevent this)");
+                api.Logger.Warning($"{config.Mod?.Info?.Name}', has requested config '{config.Type}' on both local client and server, skipping auto config ('ClientServerConfigAutoMerge' can be enabled to prevent this)");
                 return;
             }
 

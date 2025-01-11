@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Vintagestory.GameContent;
 
 namespace AutoConfigLib.Auto.Rendering
 {
@@ -16,9 +17,13 @@ namespace AutoConfigLib.Auto.Rendering
 
         public object DefaultValue { get; set; }
 
+        public bool HasDefaultValue { get; set; }
+
         public string SubId { get; set; }
 
         public bool IsReadOnly { get; set; }
+
+        public bool IsNullableValueType { get; set; }
 
         public bool IsVisible { get; set; } = true;
         //TODO use static int to see if still valid!
@@ -90,7 +95,13 @@ namespace AutoConfigLib.Auto.Rendering
             
             Category = memberInfo.GetCustomAttribute<CategoryAttribute>()?.Category ?? string.Empty;
             Description = memberInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
-            DefaultValue = memberInfo.GetCustomAttribute<DefaultValueAttribute>()?.Value;
+
+            var defaultAttr = memberInfo.GetCustomAttribute<DefaultValueAttribute>();
+            if (defaultAttr != null)
+            {
+                HasDefaultValue = true;
+                DefaultValue = defaultAttr.Value;
+            }
 
             var readonlyAttr = memberInfo.GetCustomAttribute<ReadOnlyAttribute>();
             if (readonlyAttr != null) IsReadOnly = readonlyAttr.IsReadOnly;
@@ -104,11 +115,15 @@ namespace AutoConfigLib.Auto.Rendering
             {
                 if (!PropertyInfo.CanWrite) IsReadOnly = true;
                 if (!PropertyInfo.CanRead || PropertyInfo.GetGetMethod(true).IsStatic) IsVisible = false;
+
+                IsNullableValueType = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) != null;
             }
             else if (FieldInfo != null)
             {
                 if (FieldInfo.IsInitOnly) IsReadOnly = true;
                 if (FieldInfo.IsStatic) IsVisible = false;
+
+                IsNullableValueType = Nullable.GetUnderlyingType(FieldInfo.FieldType) != null;
             }
             else if (MethodInfo != null)
             {
@@ -118,7 +133,6 @@ namespace AutoConfigLib.Auto.Rendering
             {
                 IsVisible = false;
             }
-
             //TODO button renderer
         }
 

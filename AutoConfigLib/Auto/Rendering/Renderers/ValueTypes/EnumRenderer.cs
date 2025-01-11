@@ -6,9 +6,10 @@ using Vintagestory.API.Util;
 
 namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 {
-    public class EnumRenderer<T> : IRenderer<T> where T : struct, Enum
+    public class EnumRenderer<T> : ValueRendererBase<T>, IRenderer where T : struct, Enum
     {
-        
+        public override bool OnlyUpdateOnItemDeactivation => false;
+
         public bool IsEnumFlag { get; private set; }
 
         public T[] ValidValues { get; private set; }
@@ -23,7 +24,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
             ValidStrValues = ValidValues.Select(val => val.ToString()).ToArray();
         }
 
-        public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null)
+        public override void RenderValue(ref T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
             //TODO atribute support
 
@@ -31,7 +32,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
             {
                 var currentIndex = ValidValues.IndexOf(instance);
                 ImGui.Combo($"{fieldDefinition?.Name}##{id}", ref currentIndex, ValidStrValues, ValidStrValues.Length);
-                return ValidValues[currentIndex];
+                instance = ValidValues[currentIndex];
             }
             else
             {
@@ -67,8 +68,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
                 // Update the enum value if it was modified
                 if (modified) instance = (T)Enum.ToObject(typeof(T), intValue);
             }
-
-            return instance;
         }
     }
 }

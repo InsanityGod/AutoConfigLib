@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace AutoConfigLib.Auto.Rendering
 {
@@ -95,22 +96,25 @@ namespace AutoConfigLib.Auto.Rendering
             ImGui.PopStyleColor();
         }
 
+        //TODO see if there is a way for us to disable the reload button
         public static T ResetValueButton<T>(T instance, string id, FieldRenderDefinition fieldDefinition)
         {
-            if(fieldDefinition?.DefaultValue != null)
+            if(fieldDefinition?.IsReadOnly == true) return instance;
+
+            if(fieldDefinition?.HasDefaultValue == true)
             {
                 if (ImGui.Button($"~##{id}-reset-button"))
                 {
                     try
                     {
-                        return (T)fieldDefinition.DefaultValue; //TODO test
+                        instance = (T)fieldDefinition.DefaultValue;
                     }
                     catch
                     {
                         //Default value was incorrectly configured
                     }
                 }
-                Tooltip($"Reset to default: {fieldDefinition.DefaultValue}");
+                Tooltip($"Reset to default: {fieldDefinition.DefaultValue ?? "null"}");
                 ImGui.SameLine();
             }
             return instance;
