@@ -3,24 +3,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AutoConfigLib.AutoConfig.Generators
+namespace AutoConfigLib.Auto.Generators
 {
     public static class UniqueGenerator
     {
-        public static T GenerateUnique<T>(IEnumerable<T> existing)
+        public static T Generate<T>(IEnumerable<T> existing, out bool success)
         {
-            if(typeof(T) != typeof(string))
+            success = true;
+            if (typeof(T) != typeof(string))
             {
-                if (!typeof(T).IsValueType) return Activator.CreateInstance<T>();
+                if (!typeof(T).IsValueType) return InstanceGenerator.Generate<T>();
 
                 T result = default;
-                if(!existing.Contains(result)) return result;
+                if (!existing.Contains(result)) return result;
             }
 
             IEnumerable<object> possibilities = null;
             if (typeof(T) == typeof(bool))
             {
                 possibilities = new object[] { true, false };
+            }
+            else if (typeof(T).BaseType == typeof(Enum))
+            {
+                possibilities = ((T[])Enum.GetValues(typeof(T))).Select(x => (object)x);
             }
             else if (typeof(T).IsNumber())
             {
@@ -36,23 +41,32 @@ namespace AutoConfigLib.AutoConfig.Generators
                 while (existing.Contains((T)(object)$"{baseStr}{num}")) num++;
                 return (T)(object)$"{baseStr}{num}";
             }
-            else if(typeof(T).BaseType == typeof(Enum))
-            {
-                possibilities = (object[])Enum.GetValues(typeof(T));
-            }
 
-            if(possibilities != null)
+            if (possibilities != null)
             {
-                foreach(var possibility in possibilities)
+                foreach (var possibility in possibilities)
                 {
                     if (!existing.Contains((T)possibility))
                     {
                         return (T)possibility;
                     }
                 }
+                success = false;
+                return default;
             }
 
             throw new InvalidOperationException($"Cannot create unique instance of type '{typeof(T)}'");
+        }
+        
+        public static bool CanGenerate<T>()
+        {
+            if (typeof(T).IsInterface || typeof(T).IsAbstract) return false;
+            if (typeof(T) == typeof(string)) return true;
+            if (typeof(T) == typeof(bool)) return true;
+            if (typeof(T).IsNumber()) return true;
+            if (typeof(T).BaseType == typeof(Enum)) return true;
+
+            return InstanceGenerator.CanGenerate<T>();
         }
     }
 }
