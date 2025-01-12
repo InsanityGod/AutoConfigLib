@@ -187,7 +187,7 @@ namespace AutoConfigLib.Auto.Rendering
 
             var maxLengthAttribute = memberInfo.GetCustomAttribute<MaxLengthAttribute>();
             MaxStringLength = (uint)(maxLengthAttribute?.Length ?? AutoConfigLibModSystem.Config.DefaultMaxStringLength);
-
+            
             var formatAttr = memberInfo.GetCustomAttribute<DisplayFormatAttribute>();
             FormatString = formatAttr?.DataFormatString;
 

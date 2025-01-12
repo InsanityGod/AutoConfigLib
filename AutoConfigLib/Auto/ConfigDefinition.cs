@@ -26,13 +26,22 @@ namespace AutoConfigLib.Auto
 
         public void Save(ICoreAPI api) => api.StoreModConfig(new JsonObject(JToken.FromObject(PrimaryValue)), ConfigPath);
 
-        public void Edit(ICoreAPI api, string id, ControlButtons buttons)
+        private static readonly ControlButtons supportedButtons = new()
+        {
+            Defaults = true,
+            Restore = true,
+            Save = true,
+            Reload = false,
+        };
+
+        public ControlButtons Edit(ICoreAPI api, string id, ControlButtons buttons)
         {
             if (buttons.Defaults) ResetToDefaul();
             if (buttons.Restore) ReloadFromFile(api);
             if (buttons.Save) Save(api);
 
             Renderer.GetOrCreateRenderForType(Type).RenderObject(PrimaryValue, id);
+            return supportedButtons;
         }
 
         public void ResetToDefaul()
