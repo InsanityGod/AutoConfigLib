@@ -10,10 +10,12 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 
         public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            var original = fieldDefinition?.IsNullableValueType == true ? instance : ImGuiHelper.ResetValueButton(instance, id, fieldDefinition);
+            if(fieldDefinition?.IsNullableValueType != true) instance = ImGuiHelper.ResetValueButton(instance, id, fieldDefinition);
+            var original = instance;
 
             RenderValue(ref instance, id, fieldDefinition);
-            if (OnlyUpdateOnItemDeactivation && !ImGui.IsItemDeactivated())
+            //Sliders for some reason have issues with this -_-
+            if (fieldDefinition?.UseSlider != true && OnlyUpdateOnItemDeactivation && !ImGui.IsItemDeactivated())
             {
                 return original; //Only sends new value when update is complete
             }

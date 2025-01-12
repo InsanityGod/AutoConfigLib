@@ -14,7 +14,7 @@ namespace AutoConfigLib.Auto
         {
             if (FoundConfigsByPath.TryGetValue(configPath, out var config))
             {
-                //TODO see if there is a better way to get matching mod
+                //TODO: see if there is a better way to get matching mod
                 config.Mod ??= api.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
                 if (AutoConfigLibModSystem.Config.AutoMergeClientServerConfig) return (T)(config.ServerValue ?? config.ClientValue);
 
@@ -52,7 +52,7 @@ namespace AutoConfigLib.Auto
                 }
                 catch
                 {
-                    //TODO centralize logging for debug/display purposes
+                    //TODO: centralize logging for debug/display purposes
                     api.Logger.Warning($"Failed to load AutoConfig for '{config.ConfigPath}' ({config.Mod?.Info?.Name ?? "Unknown Mod"})");
                 }
             }

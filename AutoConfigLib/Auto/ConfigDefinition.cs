@@ -31,7 +31,6 @@ namespace AutoConfigLib.Auto
             if (buttons.Defaults) ResetToDefaul();
             if (buttons.Restore) ReloadFromFile(api);
             if (buttons.Save) Save(api);
-            //TODO: Reload?
 
             Renderer.GetOrCreateRenderForType(Type).RenderObject(PrimaryValue, id);
         }

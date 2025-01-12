@@ -26,8 +26,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
 
         public override void RenderValue(ref T instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
-            //TODO atribute support
-
             if (!IsEnumFlag)
             {
                 var currentIndex = ValidValues.IndexOf(instance);

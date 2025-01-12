@@ -69,8 +69,6 @@ namespace AutoConfigLib.Auto.Rendering
             CachedRenderesByType[type] = result;
             result.Initialize();
 
-            //TODO: custom renderers for JsonItemStack and Code/AssetLocation
-
             return result;
         }
 

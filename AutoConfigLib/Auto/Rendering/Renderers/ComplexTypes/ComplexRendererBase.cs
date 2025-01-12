@@ -10,7 +10,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
         
         public bool CanBeInitialized { get; private set; }
 
-        public bool ShouldBeInsideCollapseHeader => true;
+        public virtual bool ShouldBeInsideCollapseHeader => true;
 
         public bool UseGroupDisplacement { get; set; }
         public float GroupDisplacementX { get; set; }
@@ -35,14 +35,21 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
                 {
                     instance = InstanceGenerator.Generate<T>();
                 }
+                else if(ShouldBeInsideCollapseHeader) ImGuiHelper.TooltipIcon(fieldDefinition.Description);
                 ImGuiHelper.SetExceptionToolTip(CanBeInitialized ? null : $"type of {fieldDefinition.Name ?? "unknown"} field cannot be initialized ({typeof(T)})");
                 ImGui.EndDisabled();
                 return instance;
             }
 
-            if (fieldDefinition != null)
+            if (ShouldBeInsideCollapseHeader && fieldDefinition != null)
             {
-                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse")) return instance;
+                if (!ImGui.CollapsingHeader($"{fieldDefinition.Name}##{id}-colapse"))
+                {
+                    ImGuiHelper.TooltipIcon(fieldDefinition.Description, true);
+                    return instance;
+                }
+                ImGuiHelper.TooltipIcon(fieldDefinition.Description, true);
+
                 ImGui.Indent();
             }
 
@@ -65,6 +72,8 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
 
             var result = RenderValue(instance, id, fieldDefinition);
 
+            if(ShouldBeInsideCollapseHeader) ImGui.Dummy(new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight() * AutoConfigLibModSystem.Config.ComplexTypePaddingMultiplier));
+
             if (isUsingGroup)
             {
                 ImGui.Unindent();
@@ -72,7 +81,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
                 ImGui.SetCursorPosX(cursorPos.X);
             }
 
-            if (fieldDefinition != null) ImGui.Unindent();
+            if (ShouldBeInsideCollapseHeader && fieldDefinition != null) ImGui.Unindent();
             
             return result;
         }

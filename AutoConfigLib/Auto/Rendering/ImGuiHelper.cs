@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -62,11 +63,16 @@ namespace AutoConfigLib.Auto.Rendering
             ImGui.Dummy(new Vector2(0, style.ItemSpacing.Y));
         }
 
-        public static void TooltipIcon(string comment)
+        public static void TooltipIcon(string comment, bool endOfLine = false)
         {
             if (string.IsNullOrEmpty(comment)) return;
 
-            ImGui.SameLine();
+            if (endOfLine)
+            {
+                //TODO find a way to get this to allign propperly
+                ImGui.SameLine();
+            }
+            else ImGui.SameLine();
             ImGui.TextDisabled("(?)");
             Tooltip(comment);
         }
@@ -107,7 +113,7 @@ namespace AutoConfigLib.Auto.Rendering
                 {
                     try
                     {
-                        instance = (T)fieldDefinition.DefaultValue;
+                        instance = (T)Convert.ChangeType(fieldDefinition.DefaultValue, typeof(T));
                     }
                     catch
                     {

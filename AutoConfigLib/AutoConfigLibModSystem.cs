@@ -94,7 +94,6 @@ namespace AutoConfigLib
             if (api.Side == EnumAppSide.Server) return;
 
             AutoConfigGenerator.RegisterFoundConfigsInConfigLib(api);
-            //TODO: see if we can patch the modloader to call this at the end of mod loading cyclus instead (just to make extra sure everthing of other mods is initialized)
         }
 
         public override void Dispose()

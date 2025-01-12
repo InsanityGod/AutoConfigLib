@@ -21,6 +21,7 @@ namespace AutoConfigLib.Auto.Rendering
             "hours",
         };
 
+        //TODO: see if we can implement multi term matching
         public static Dictionary<string, List<FieldRenderDefinition>> CategorizeByName(List<FieldRenderDefinition> fieldRenderDefinitions)
         {
             var termFrequency = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);

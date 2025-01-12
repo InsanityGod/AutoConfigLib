@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AutoConfigLib.Auto.Rendering
 {
     public static class StringTools
     {
+        public static string CleanWhiteSpaces(string input) => Regex.Replace(input, @"[^\S\r\n]+", " ").Replace("\n ", "\n").Trim();
 
         public static string Capitalize(string input)
         {

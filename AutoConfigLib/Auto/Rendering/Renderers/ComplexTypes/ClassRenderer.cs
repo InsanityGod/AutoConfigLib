@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using ImGuiNET;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,9 +39,16 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
                 memberQuery = memberQuery.Where(member => member.GetCustomAttribute<ObsoleteAttribute>() == null);
             }
 
+            if (!AutoConfigLibModSystem.Config.ShowNonProtoMembersInProtoClass)
+            {
+                var isProto = typeof(T).GetCustomAttribute<ProtoContractAttribute>() != null;
+                if (isProto) memberQuery = memberQuery.Where(member => member.GetCustomAttribute<ProtoMemberAttribute>() != null);
+            }
+
             members = memberQuery.ToList();
 
             FieldRenderInfoByGroup = members.Select(FieldRenderDefinition.Create)
+                .Where(item => item.IsVisible) //No point saving invisible items
                 .GroupBy(x => x.Category)
                 .ToDictionary(item => item.Key, item => item.ToList());
 
@@ -85,7 +93,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
                     ImGui.BeginDisabled(field.IsReadOnly && !field.ValueRenderer.IgnoreReadOnly);
                     var value = field.GetValue(instance);
                     var result = field.ValueRenderer.RenderObject(value, $"{id}-{field.SubId}", field);
-                    ImGuiHelper.TooltipIcon(field.Description);
+                    if(!field.ValueRenderer.ShouldBeInsideCollapseHeader) ImGuiHelper.TooltipIcon(field.Description);
 
                     if (!field.IsReadOnly && result != value) field.SetValue(instance, result);
 

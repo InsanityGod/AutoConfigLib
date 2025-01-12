@@ -39,5 +39,7 @@ namespace AutoConfigLib.Auto.Rendering
         }
 
         public T Render(T instance, string id, FieldRenderDefinition fieldDefinition = null);
+
+        public bool IsCacheValid => Renderer.CachedRenderesByType.TryGetValue(typeof(T), out var renderer) && ReferenceEquals(this, renderer);
     }
 }

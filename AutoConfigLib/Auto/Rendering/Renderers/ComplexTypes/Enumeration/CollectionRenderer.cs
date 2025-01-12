@@ -49,7 +49,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(-1);
-                var item = instance.ElementAt(row); //TODO: test this both functionally as performance
+                var item = instance.ElementAt(row);
 
                 if (!UseCollapseHeaderForValues || ImGui.CollapsingHeader($"Content##{id}-collection-colapse-{row}"))
                 {
