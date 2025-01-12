@@ -41,8 +41,8 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
 
             if (!AutoConfigLibModSystem.Config.ShowNonProtoMembersInProtoClass)
             {
-                var isProto = typeof(T).GetCustomAttribute<ProtoContractAttribute>() != null;
-                if (isProto) memberQuery = memberQuery.Where(member => member.GetCustomAttribute<ProtoMemberAttribute>() != null);
+                var protoAttr = typeof(T).GetCustomAttribute<ProtoContractAttribute>();
+                if (protoAttr != null && protoAttr.ImplicitFields ==  ImplicitFields.None) memberQuery = memberQuery.Where(member => member.GetCustomAttribute<ProtoMemberAttribute>() != null);
             }
 
             members = memberQuery.ToList();
