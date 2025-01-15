@@ -1,32 +1,75 @@
 ﻿using AutoConfigLib.Auto.Rendering;
+using CompactExifLib;
 using ConfigLib;
 using ImGuiNET;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.Server;
 
 namespace AutoConfigLib.Auto
 {
     public class ConfigDefinition
     {
+        [ReadOnly(true)]
         public Type Type { get; set; }
 
+        [ReadOnly(true)]
         public string ConfigPath { get; set; }
 
+        [Browsable(false)]
         public object ClientValue { get; set; }
-
+        
+        [Browsable(false)]
         public object ServerValue { get; set; }
 
+        [Browsable(false)]
         public object PrimaryValue { get; set; }
+
+        [Browsable(false)]
+        internal bool IsLocalized_Internal { get; set; }
+
+        [Description("Whether config should be writen to World Conifg, to alllow for per world configuration\n*When enabling, current config will be written to world config\n*When disabling, config will be removed from world config and global config will be loaded")]
+        [Category("Experimental")]
+        public bool IsLocalized
+        {
+            get => IsLocalized_Internal;
+            set
+            {
+                if(AutoConfigLibModSystem.CoreServerAPI == null || value == IsLocalized_Internal) return;
+                IsLocalized_Internal = value;
+
+                var autoConfigLibTree = AutoConfigLibModSystem.CoreServerAPI.World.Config.GetOrAddTreeAttribute("autoconfiglib");
+                if (value)
+                {
+                    string json = JsonConvert.SerializeObject(PrimaryValue, Formatting.None);
+                    autoConfigLibTree.SetString(ConfigPath, json);
+                }
+                else
+                {
+                    autoConfigLibTree.RemoveAttribute(ConfigPath);
+                    ReloadFromFile(AutoConfigLibModSystem.CoreServerAPI);
+                }
+            }
+        }
 
         public Mod Mod { get; set; }
 
-        public void Save(ICoreAPI api) => api.StoreModConfig(new JsonObject(JToken.FromObject(PrimaryValue)), ConfigPath);
+        public void Save(ICoreAPI api)
+        {
+            if (IsLocalized)
+            {
+                AutoConfigLibModSystem.CoreServerAPI?.World.Config.GetOrAddTreeAttribute("autoconfiglib").SetString(ConfigPath, JsonConvert.SerializeObject(PrimaryValue, Formatting.None));
+            }
+            else api.StoreModConfig(new JsonObject(JToken.FromObject(PrimaryValue)), ConfigPath);
+        }
 
-        private static readonly ControlButtons supportedButtons = new()
+        private static ControlButtons supportedButtons = new()
         {
             Defaults = true,
             Restore = true,
@@ -40,7 +83,8 @@ namespace AutoConfigLib.Auto
             if (buttons.Restore) ReloadFromFile(api);
             if (buttons.Save) Save(api);
 
-            Renderer.GetOrCreateRenderForType(Type).RenderObject(PrimaryValue, id);
+            Renderer.GetOrCreateRenderForType(typeof(ConfigDefinition)).RenderObject(this, id);
+            supportedButtons.Save = !IsLocalized || AutoConfigLibModSystem.CoreServerAPI != null;
             return supportedButtons;
         }
 
@@ -62,11 +106,20 @@ namespace AutoConfigLib.Auto
         {
             try
             {
-                var newInstance = typeof(ICoreAPICommon)
+
+                object newInstance;
+                if (IsLocalized)
+                {
+                    newInstance = JsonConvert.DeserializeObject((string)api.World.Config.GetOrAddTreeAttribute("autoconfiglib")[ConfigPath].GetValue(), Type);
+                }
+                else
+                {
+                    newInstance = typeof(ICoreAPICommon)
                             .GetMethods()
                             .First(method => method.Name == nameof(ICoreAPICommon.LoadModConfig) && method.IsGenericMethod)
                             .MakeGenericMethod(Type)
                             .Invoke(api, new object[] { ConfigPath });
+                }
                 OverwriteWith(newInstance);
             }
             catch (Exception ex)

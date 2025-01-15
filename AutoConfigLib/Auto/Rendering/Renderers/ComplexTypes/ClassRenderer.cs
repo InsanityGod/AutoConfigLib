@@ -92,7 +92,13 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
                     if (field.ValueRenderer == null || !field.IsVisible) continue;
                     ImGui.BeginDisabled(field.IsReadOnly && !field.ValueRenderer.IgnoreReadOnly);
                     var value = field.GetValue(instance);
-                    var result = field.ValueRenderer.RenderObject(value, $"{id}-{field.SubId}", field);
+                    object result;
+                    if (AutoConfigLibModSystem.Config.UseInstanceTypeOverFieldType && value != null && value is not MethodInfo)
+                    {
+                        result = Renderer.GetOrCreateRenderForType(value.GetType()).RenderObject(value, $"{id}-{field.SubId}", field);
+                    }
+                    else result = field.ValueRenderer.RenderObject(value, $"{id}-{field.SubId}", field);
+                    
                     if(!field.ValueRenderer.ShouldBeInsideCollapseHeader) ImGuiHelper.TooltipIcon(field.Description);
 
                     if (!field.IsReadOnly && result != value) field.SetValue(instance, result);

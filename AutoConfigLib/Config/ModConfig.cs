@@ -14,6 +14,10 @@ namespace AutoConfigLib.Config
 
         [DefaultValue(true)]
         public bool RegisterWorldConfig { get; set; } = true;
+        
+        [DefaultValue(false)]
+        [Description("If set to true, renderer for actual instance type will be used rather then that the field type")]
+        public bool UseInstanceTypeOverFieldType { get; set; } = false;
 
         [DisplayName("Config Window Improvements")]
         [Description("Some minor improvements to the config window (from configlib itself)\nSuch as increased size constraint\n*requires mod reload to apply")]
@@ -59,6 +63,11 @@ namespace AutoConfigLib.Config
         [Category("Debug")]
         [DefaultValue(false)]
         public bool ShowObsoleteMembers { get; set; } = false;
+
+        [Description("Will show the config definition in the config page")]
+        [Category("Debug")]
+        [DefaultValue(false)]
+        public bool ShowConfigDefinition { get; set; } = false;
 
         [Description("If enabled you will see members that haven't been marked with ProtoMeber inside a class marked with ProtoContract")]
         [Category("Dangerous But Fun")]

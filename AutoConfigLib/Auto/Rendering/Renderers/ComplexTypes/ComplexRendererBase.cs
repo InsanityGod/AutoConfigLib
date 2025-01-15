@@ -16,6 +16,8 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes
         public float GroupDisplacementX { get; set; }
         public float GroupExtraSpaceX { get; set; }
 
+        public virtual bool IsComplex => true;
+
         public virtual void Initialize() => CanBeInitialized = InstanceGenerator.CanGenerate<T>();
 
         public abstract T RenderValue(T instance, string id, FieldRenderDefinition fieldDefinition = null);

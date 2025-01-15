@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using AutoConfigLib.Auto.Rendering.Attributes;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -105,11 +106,11 @@ namespace AutoConfigLib.Auto.Rendering
             FieldInfo = memberInfo as FieldInfo;
             MethodInfo = memberInfo as MethodInfo;
 
-            var nameAttr = memberInfo.GetCustomAttribute<DisplayNameAttribute>();
+            var nameAttr = memberInfo.GetAttribute<DisplayNameAttribute>();
             Name = string.IsNullOrEmpty(nameAttr?.DisplayName) ? Renderer.GetHumanReadable(memberInfo.Name) : nameAttr.DisplayName;
             
-            Category = memberInfo.GetCustomAttribute<CategoryAttribute>()?.Category ?? string.Empty;
-            var descriptionAttr = memberInfo.GetCustomAttribute<DescriptionAttribute>();
+            Category = memberInfo.GetAttribute<CategoryAttribute>()?.Category ?? string.Empty;
+            var descriptionAttr = memberInfo.GetAttribute<DescriptionAttribute>();
             if(descriptionAttr != null)
             {
                 Description = descriptionAttr.Description;
@@ -119,17 +120,17 @@ namespace AutoConfigLib.Auto.Rendering
                 Description = xmlSummary;
             }
 
-            var defaultAttr = memberInfo.GetCustomAttribute<DefaultValueAttribute>();
+            var defaultAttr = memberInfo.GetAttribute<DefaultValueAttribute>();
             if (defaultAttr != null)
             {
                 HasDefaultValue = true;
                 DefaultValue = defaultAttr.Value;
             }
 
-            var readonlyAttr = memberInfo.GetCustomAttribute<ReadOnlyAttribute>();
+            var readonlyAttr = memberInfo.GetAttribute<ReadOnlyAttribute>();
             if (readonlyAttr != null) IsReadOnly = readonlyAttr.IsReadOnly;
 
-            var browseAble = memberInfo.GetCustomAttribute<BrowsableAttribute>();
+            var browseAble = memberInfo.GetAttribute<BrowsableAttribute>();
             IsVisible = browseAble?.Browsable ?? (MethodInfo == null);
 
             SubId = memberInfo.Name;
@@ -162,7 +163,7 @@ namespace AutoConfigLib.Auto.Rendering
                 IsNullableValueType = Nullable.GetUnderlyingType(ValueType) != null;
             }
 
-            var rangeAttr = memberInfo.GetCustomAttribute<RangeAttribute>();
+            var rangeAttr = memberInfo.GetAttribute<RangeAttribute>();
             if(ValueType != null && rangeAttr != null)
             {
                 var type = Nullable.GetUnderlyingType(typeof(ValueType)) ?? ValueType;
@@ -185,10 +186,10 @@ namespace AutoConfigLib.Auto.Rendering
                 }
             }
 
-            var maxLengthAttribute = memberInfo.GetCustomAttribute<MaxLengthAttribute>();
+            var maxLengthAttribute = memberInfo.GetAttribute<MaxLengthAttribute>();
             MaxStringLength = (uint)(maxLengthAttribute?.Length ?? AutoConfigLibModSystem.Config.DefaultMaxStringLength);
             
-            var formatAttr = memberInfo.GetCustomAttribute<DisplayFormatAttribute>();
+            var formatAttr = memberInfo.GetAttribute<DisplayFormatAttribute>();
             FormatString = formatAttr?.DataFormatString;
 
             IsPercentage = FormatString != null && FormatString.ToLower() == "p" && (Nullable.GetUnderlyingType(ValueType) ?? ValueType) == typeof(float);
@@ -201,7 +202,5 @@ namespace AutoConfigLib.Auto.Rendering
             newInstance.Initialize(info);
             return newInstance;
         }
-
-        public T GetCustomAttribute<T>() where T : Attribute => ((MemberInfo)PropertyInfo ?? FieldInfo).GetCustomAttribute<T>();
     }
 }

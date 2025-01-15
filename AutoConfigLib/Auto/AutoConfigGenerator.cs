@@ -1,4 +1,5 @@
 ﻿using ConfigLib;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,10 @@ namespace AutoConfigLib.Auto
 
         public static T RegisterOrCollectConfigFile<T>(ICoreAPI api, string configPath, T configValue)
         {
+            var autoConfigLibTree = api.World.Config.GetOrAddTreeAttribute("autoconfiglib");
+            var isLocalized = autoConfigLibTree.TryGetAttribute(configPath, out var localizedConfigStr);
+            if (isLocalized) configValue = JsonConvert.DeserializeObject<T>((string)localizedConfigStr.GetValue());
+
             if (FoundConfigsByPath.TryGetValue(configPath, out var config))
             {
                 //TODO: see if there is a better way to get matching mod
@@ -26,6 +31,7 @@ namespace AutoConfigLib.Auto
                 config = new ConfigDefinition
                 {
                     ConfigPath = configPath,
+                    IsLocalized_Internal = isLocalized,
                     Type = typeof(T),
                     Mod = api.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == typeof(T).Assembly)
                 };

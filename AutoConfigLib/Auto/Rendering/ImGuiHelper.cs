@@ -9,15 +9,14 @@ namespace AutoConfigLib.Auto.Rendering
     {
         public static void IndentedSeparator()
         {
-            float indentX = ImGui.GetCursorPosX();
             float separatorWidth = ImGui.GetContentRegionAvail().X;
 
             var cursorPos = ImGui.GetCursorScreenPos();
             ImGui.GetWindowDrawList().AddLine(
-                new Vector2(cursorPos.X + indentX, cursorPos.Y),
-                new Vector2(cursorPos.X + indentX + separatorWidth, cursorPos.Y),
+                new Vector2(cursorPos.X, cursorPos.Y),
+                new Vector2(cursorPos.X + separatorWidth, cursorPos.Y),
                 ImGui.GetColorU32(ImGuiCol.Separator),
-                1.0f
+                4.0f
             );
 
             ImGui.Dummy(new Vector2(0, ImGui.GetStyle().ItemSpacing.Y)); // Add vertical spacing

@@ -1,5 +1,6 @@
 ﻿using AutoConfigLib.Auto;
 using AutoConfigLib.Auto.Rendering;
+using AutoConfigLib.Auto.Rendering.Attributes;
 using AutoConfigLib.Config;
 using AutoConfigLib.HarmonyPatches;
 using ConfigLib;
@@ -21,6 +22,7 @@ namespace AutoConfigLib
         {
             AutoConfigGenerator.FoundConfigsByPath ??= new();
             Renderer.CachedRenderesByType ??= new();
+            AttributeHelper.RegisterDefaultCustomProviders();
             if (!Harmony.HasAnyPatches("autoconfiglib"))
             {
                 harmony.PatchAllUncategorized();
@@ -101,6 +103,8 @@ namespace AutoConfigLib
             harmony?.UnpatchAll();
             AutoConfigGenerator.FoundConfigsByPath = null;
             Renderer.CachedRenderesByType = null;
+            AttributeHelper.CustomProviders.Clear();
+            Config = null;
 
             DoNotTouchThis.Touched_1 = false;
             base.Dispose();

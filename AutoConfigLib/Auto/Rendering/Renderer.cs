@@ -1,4 +1,5 @@
-﻿using AutoConfigLib.Auto.Rendering.Renderers;
+﻿using AutoConfigLib.Auto.Rendering.Attributes;
+using AutoConfigLib.Auto.Rendering.Renderers;
 using AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes;
 using AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Enumeration;
 using AutoConfigLib.Auto.Rendering.Renderers.ValueTypes;
@@ -56,7 +57,14 @@ namespace AutoConfigLib.Auto.Rendering
             if (listInterface != null) result ??= (IRenderer)Activator.CreateInstance(typeof(ListRenderer<,>).MakeGenericType(type, listInterface.GenericTypeArguments[0]));
 
             var collectionInterface = type.GetFirstGenericInterface(typeof(ICollection<>));
-            if (collectionInterface != null) result ??= (IRenderer)Activator.CreateInstance(typeof(CollectionRenderer<,>).MakeGenericType(type, collectionInterface.GenericTypeArguments[0]));
+            if (collectionInterface != null)
+            {
+                if(AutoConfigLibModSystem.Config.UseDefaultImplementationForCollections) result ??= (IRenderer)Activator.CreateInstance(typeof(CollectionRenderer<,>).MakeGenericType(type, collectionInterface.GenericTypeArguments[0]));
+                else result ??= (IRenderer)Activator.CreateInstance(typeof(UnsupportedTypeRenderer<>).MakeGenericType(type));
+            }
+
+            var readonlyCollectionInterface = type.GetFirstGenericInterface(typeof(IReadOnlyCollection<>));
+            if (readonlyCollectionInterface != null) result ??= (IRenderer)Activator.CreateInstance(typeof(ReadonlyCollectionRenderer<,>).MakeGenericType(type, readonlyCollectionInterface.GenericTypeArguments[0]));
 
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null && nullableType.IsValueType) result ??= (IRenderer)Activator.CreateInstance(typeof(NullableValueRenderer<>).MakeGenericType(type));
@@ -71,11 +79,6 @@ namespace AutoConfigLib.Auto.Rendering
 
             return result;
         }
-
-        public static Type GetFirstGenericInterface(this Type typeToCheck, Type genericInterfaceType) => Array.Find(
-            typeToCheck.GetInterfaces(),
-            interfaceType => interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == genericInterfaceType
-        );
 
         internal static readonly char[] ReadableSplitIdentifiers = new char[] { '-', '_', ':' };
 

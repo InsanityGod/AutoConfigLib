@@ -23,11 +23,11 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Custom
         public override AssetLocation RenderValue(AssetLocation instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
             ImGui.BeginGroup();
-            instance.Domain = (string)ValueRenderer.RenderObject(instance.Domain, $"##{id}-domain");
+            instance.Domain = (string)ValueRenderer.RenderObject(instance.Domain, $"{id}-domain");
             ImGui.SameLine();
             ImGui.Text(":");
             ImGui.SameLine();
-            instance.Path = (string)ValueRenderer.RenderObject(instance.Path, $"##{id}-path");
+            instance.Path = (string)ValueRenderer.RenderObject(instance.Path, $"{id}-path", fieldDefinition);
             ImGui.EndGroup();
             return instance;
             //TODO maybe use IsValid to show the user wether it's correct or not
