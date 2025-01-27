@@ -15,7 +15,6 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Custom
         {
             _classRenderer = new ClassRenderer<ConfigDefinition>();
             _classRenderer.Initialize();
-            //TODO late initialize
         }
 
         public ConfigDefinition Render(ConfigDefinition instance, string id, FieldRenderDefinition fieldDefinition = null)
@@ -26,8 +25,11 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ComplexTypes.Custom
 
                 ImGuiHelper.IndentedSeparator();
             }
-
-            Renderer.GetOrCreateRenderForType(instance.Type).RenderObject(instance.PrimaryValue, $"{id}-config");
+            if(instance.PrimaryValue == null)
+            {
+                ImGui.Text("Could not intercept config because it was only just created. Please reload world first.");
+            }
+            else Renderer.GetOrCreateRenderForType(instance.Type).RenderObject(instance.PrimaryValue, $"{id}-config");
             return instance;
         }
     }
