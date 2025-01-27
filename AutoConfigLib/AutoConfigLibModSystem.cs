@@ -53,7 +53,7 @@ namespace AutoConfigLib
             {
                 try
                 {
-                    Config = api.LoadModConfig<ModConfig>(ConfigName);
+                    Config = api.LoadModConfig<ModConfig>(ConfigName) ?? new();
                     api.StoreModConfig(Config, ConfigName); //Save just in case new fields where initialized
                     Config = AutoConfigGenerator.RegisterOrCollectConfigFile(api, ConfigName, Config);
                 }
