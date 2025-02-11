@@ -18,6 +18,8 @@ namespace AutoConfigLib
 
         public const string ConfigName = "AutoConfigLibConfig.json";
 
+        public override double ExecuteOrder() => double.MinValue;
+
         public AutoConfigLibModSystem()
         {
             AutoConfigGenerator.FoundConfigsByPath ??= new();

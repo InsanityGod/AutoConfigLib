@@ -13,6 +13,13 @@ namespace AutoConfigLib.Auto
 
         public static T RegisterOrCollectConfigFile<T>(ICoreAPI api, string configPath, T configValue)
         {
+            if(AutoConfigLibModSystem.Config == null)
+            {
+                //Safety check, if this is called before AutoConfigLib is started, just return the value (should not be needed since I adjusted execution order but better safe then sorry)
+                api.Logger.Error($"AutoConfigLib could not create auto config for `{configPath}` because they requested config before AutoConfigLib was started");
+                return configValue;
+            }
+
             var autoConfigLibTree = api.World.Config.GetOrAddTreeAttribute("autoconfiglib");
             var isLocalized = autoConfigLibTree.TryGetAttribute(configPath, out var localizedConfigStr);
             if (isLocalized) configValue = JsonConvert.DeserializeObject<T>((string)localizedConfigStr.GetValue());
