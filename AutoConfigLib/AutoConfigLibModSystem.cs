@@ -74,7 +74,7 @@ namespace AutoConfigLib
         {
             var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
             if (configLib == null) return;
-            if (Config.RegisterWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
+            //if (Config.RegisterWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
             configLib.ConfigWindowClosed += Renderer.ClearCache;
         }
 

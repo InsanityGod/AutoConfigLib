@@ -12,8 +12,8 @@ namespace AutoConfigLib.Config
         [DefaultValue(true)]
         public bool AutoMergeClientServerConfig { get; set; } = true;
 
-        [DefaultValue(true)]
-        public bool RegisterWorldConfig { get; set; } = true;
+        // [DefaultValue(true)]
+        // public bool RegisterWorldConfig { get; set; } = true;
         
         [DefaultValue(false)]
         [Description("If set to true, renderer for actual instance type will be used rather then that the field type")]
