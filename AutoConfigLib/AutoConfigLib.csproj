@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -19,6 +19,10 @@
     <Reference Include="ImGui.NET">
       <HintPath>..\..\Dep\vsimgui_1.1.7\ImGui.NET.dll</HintPath>
       <Private>false</Private>
+    </Reference>
+    <Reference Include="InsanityLib">
+      <HintPath>..\..\InsanityLib\InsanityLib\bin\Debug\Mods\mod\InsanityLib.dll</HintPath>
+		<Private>false</Private>
     </Reference>
     <Reference Include="VintagestoryAPI">
       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>

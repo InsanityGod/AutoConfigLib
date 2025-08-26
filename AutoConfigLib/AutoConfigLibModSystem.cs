@@ -1,115 +1,90 @@
 ﻿using AutoConfigLib.Auto;
-using AutoConfigLib.Auto.Rendering;
-using AutoConfigLib.Auto.Rendering.Attributes;
 using AutoConfigLib.Config;
 using AutoConfigLib.HarmonyPatches;
 using ConfigLib;
 using HarmonyLib;
+using InsanityLib.Attributes.Auto.Config;
+using InsanityLib.Util.AutoRegistry;
 using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace AutoConfigLib
+namespace AutoConfigLib;
+
+public class AutoConfigLibModSystem : ModSystem
 {
-    public class AutoConfigLibModSystem : ModSystem
+    public const string harmonyId = "autoconfiglib";
+    private static Harmony Harmony { get; set; }
+
+    public override double ExecuteOrder() => double.MinValue;
+
+    public AutoConfigLibModSystem()
     {
-        private static Harmony harmony = new("autoconfiglib");
-
-        public const string ConfigName = "AutoConfigLibConfig.json";
-
-        public override double ExecuteOrder() => double.MinValue;
-
-        public AutoConfigLibModSystem()
+        AutoConfigGenerator.FoundConfigsByPath ??= new();
+        if(Harmony is null)
         {
-            AutoConfigGenerator.FoundConfigsByPath ??= new();
-            Renderer.CachedRenderesByType ??= new();
-            AttributeHelper.RegisterDefaultCustomProviders();
-            if (!Harmony.HasAnyPatches("autoconfiglib"))
-            {
-                harmony.PatchAllUncategorized();
+            Harmony = new(harmonyId);
+            Harmony.PatchAllUncategorized();
 
-                PatchConfigLoadingCode.FindAndPatchMethods(harmony);
-            }
+            PatchConfigLoadingCode.FindAndPatchMethods(Harmony);
         }
+    }
 
-        public static ModConfig Config { get; private set; }
+    public static ICoreClientAPI CoreClientAPI { get; set; }
+    public static ICoreServerAPI CoreServerAPI { get; set; }
 
-        public static ICoreClientAPI CoreClientAPI { get; set; }
-        public static ICoreServerAPI CoreServerAPI { get; set; }
+    public static void EnsureApiCache(ICoreAPI api)
+    {
+        if (api.Side == EnumAppSide.Client) CoreClientAPI ??= api as ICoreClientAPI;
+        else CoreServerAPI ??= api as ICoreServerAPI;
+    }
 
-        public static void EnsureApiCache(ICoreAPI api)
-        {
-            if (api.Side == EnumAppSide.Client) CoreClientAPI ??= api as ICoreClientAPI;
-            else CoreServerAPI ??= api as ICoreServerAPI;
-        }
+    public override void StartPre(ICoreAPI api)
+    {
+        base.StartPre(api);
+        EnsureApiCache(api);
 
-        public override void StartPre(ICoreAPI api)
-        {
-            base.StartPre(api);
-            EnsureApiCache(api);
+        AutoConfigUtil.EnsureInsanityLibConfigPreLoaded(api);
+        AutoConfigUtil.LoadMember(api, AccessTools.Property(typeof(ModConfig), nameof(ModConfig.Instance)), new AutoConfigAttribute("AutoConfigLibConfig.json") { ServerSync = false });
 
-            if (api.ModLoader.IsModEnabled("configureeverything")) harmony?.PatchCategory("configureeverything");
+        if (api.ModLoader.IsModEnabled("configureeverything")) Harmony?.PatchCategory("configureeverything");
 
-            if (Config == null)
-            {
-                try
-                {
-                    Config = api.LoadModConfig<ModConfig>(ConfigName) ?? new();
-                    api.StoreModConfig(Config, ConfigName); //Save just in case new fields where initialized
-                    Config = AutoConfigGenerator.RegisterOrCollectConfigFile(api, ConfigName, Config);
-                }
-                catch (Exception ex)
-                {
-                    api.Logger.Error($"Failed to load {ConfigName} using default, exception: {ex}");
-                    Config = new();
-                }
-            }
-            if(api.Side == EnumAppSide.Client && Config.ConfigLibWindowImprovements) harmony?.PatchCategory("ConfigLibWindowImprovements");
 
-            //TODO: maybe allow for localizing config into world settings
-        }
+        if(api.Side == EnumAppSide.Client && ModConfig.Instance.ConfigLibWindowImprovements) Harmony?.PatchCategory("ConfigLibWindowImprovements");
 
-        public override void StartClientSide(ICoreClientAPI api)
-        {
-            var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
-            if (configLib == null) return;
-            if (Config.RegisterWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
-            configLib.ConfigWindowClosed += Renderer.ClearCache;
-        }
+        //TODO: maybe allow for localizing config into world settings
+    }
 
-        /// <summary>
-        /// Register a config manually
-        /// </summary>
-        /// <returns></returns>
-        public static T RegisterOrCollectConfigFile<T>(ICoreAPI api, string configPath, T configValue) => AutoConfigGenerator.RegisterOrCollectConfigFile(api, configPath, configValue);
+    public override void StartClientSide(ICoreClientAPI api)
+    {
+        var configLib = api.ModLoader.GetModSystem<ConfigLibModSystem>();
+        if (configLib == null) return;
+        if (ModConfig.Instance.RegisterWorldConfig) configLib.RegisterCustomConfig("World Config", WorldConfigEditor.EditWorldConfig);
+    }
 
-        /// <summary>
-        /// Adds an object to configlib for editing (using auto generated UI)
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        public static void AddForEditing<T>(T obj, string name) where T : class =>
-            CoreClientAPI.ModLoader.GetModSystem<ConfigLibModSystem>().RegisterCustomConfig(name, (string id, ControlButtons buttons) => Renderer.GetOrCreateRenderForType(typeof(T)).RenderObject(obj, id));
+    /// <summary>
+    /// Register a config manually
+    /// </summary>
+    /// <returns></returns>
+    public static T RegisterOrCollectConfigFile<T>(ICoreAPI api, string configPath, T configValue) => AutoConfigGenerator.RegisterOrCollectConfigFile(api, configPath, configValue);
 
-        public override void AssetsFinalize(ICoreAPI api)
-        {
-            base.AssetsFinalize(api);
-            if (api.Side == EnumAppSide.Server) return;
 
-            AutoConfigGenerator.RegisterFoundConfigsInConfigLib(api);
-        }
+    public override void AssetsFinalize(ICoreAPI api)
+    {
+        base.AssetsFinalize(api);
+        if (api.Side == EnumAppSide.Server) return;
 
-        public override void Dispose()
-        {
-            harmony?.UnpatchAll();
-            AutoConfigGenerator.FoundConfigsByPath = null;
-            Renderer.CachedRenderesByType = null;
-            AttributeHelper.CustomProviders.Clear();
-            Config = null;
+        AutoConfigGenerator.RegisterFoundConfigsInConfigLib(api);
+    }
 
-            DoNotTouchThis.Touched_1 = false;
-            base.Dispose();
-        }
+    public override void Dispose()
+    {
+        Harmony?.UnpatchAll(harmonyId);
+        Harmony = null;
+
+        AutoConfigGenerator.FoundConfigsByPath = null;
+
+        base.Dispose();
     }
 }
