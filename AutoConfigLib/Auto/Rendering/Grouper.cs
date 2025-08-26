@@ -8,7 +8,7 @@ namespace AutoConfigLib.Auto.Rendering
 {
     public static class Grouper
     {
-        private static HashSet<string> TermBlacklist = new()
+        private static HashSet<string> TermBlacklist = new(StringComparer.OrdinalIgnoreCase)
         {
             "yield",
             "min",
@@ -19,6 +19,7 @@ namespace AutoConfigLib.Auto.Rendering
             "ms",
             "days",
             "hours",
+            "at"
         };
 
         //TODO: see if we can implement multi term matching
@@ -33,7 +34,7 @@ namespace AutoConfigLib.Auto.Rendering
 
                 foreach (var term in terms)
                 {
-                    if(TermBlacklist.Contains(term.ToLower())) continue;
+                    if(TermBlacklist.Contains(term)) continue;
                     if (termFrequency.ContainsKey(term))
                     {
                         termFrequency[term]++;
