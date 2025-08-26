@@ -26,6 +26,12 @@ namespace AutoConfigLib.Auto
 
             if (FoundConfigsByPath.TryGetValue(configPath, out var config))
             {
+            if(config.Type != typeof(T))
+            {
+                api.Logger.Warning("[AutoConfigLib] A mod attempted to load the same config file but with a different type, config might not work propperly: '{0}' -> {1} != {2}", configPath, config.Type.FullName, typeof(T).FullName);
+                return configValue;
+            }
+
                 //TODO: see if there is a better way to get matching mod
                 config.Mod ??= api.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
                 if (AutoConfigLibModSystem.Config.AutoMergeClientServerConfig) return (T)(config.ServerValue ?? config.ClientValue);
