@@ -13,7 +13,7 @@
       <Private>false</Private>
 	</Reference>
     <Reference Include="ConfigureEverything">
-      <HintPath>..\..\Dep\ConfigureEverything-v2.1.3\ConfigureEverything.dll</HintPath>
+      <HintPath>..\..\Dep\ConfigureEverything-v2.2.0\ConfigureEverything.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="ImGui.NET">

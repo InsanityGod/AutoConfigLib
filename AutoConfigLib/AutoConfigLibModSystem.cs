@@ -14,19 +14,22 @@ namespace AutoConfigLib
 {
     public class AutoConfigLibModSystem : ModSystem
     {
-        private static Harmony harmony = new("autoconfiglib");
+        private Harmony harmony;
 
         public const string ConfigName = "AutoConfigLibConfig.json";
 
         public override double ExecuteOrder() => double.MinValue;
+
 
         public AutoConfigLibModSystem()
         {
             AutoConfigGenerator.FoundConfigsByPath ??= new();
             Renderer.CachedRenderesByType ??= new();
             AttributeHelper.RegisterDefaultCustomProviders();
+            
             if (!Harmony.HasAnyPatches("autoconfiglib"))
             {
+                harmony = new("autoconfiglib");
                 harmony.PatchAllUncategorized();
 
                 PatchConfigLoadingCode.FindAndPatchMethods(harmony);
@@ -44,30 +47,60 @@ namespace AutoConfigLib
             else CoreServerAPI ??= api as ICoreServerAPI;
         }
 
+        public static void EnsureConfigLoaded(ICoreAPI api)
+        {
+            if(Config is not null) return;
+            try
+            {
+                Config = api.LoadModConfig<ModConfig>(ConfigName) ?? new();
+                api.StoreModConfig(Config, ConfigName); //Save just in case new fields where initialized
+                Config = AutoConfigGenerator.RegisterOrCollectConfigFile(api, ConfigName, Config);
+            }
+            catch (Exception ex)
+            {
+                api.Logger.Error($"Failed to load {ConfigName} using default, exception: {ex}");
+                Config = new();
+            }
+        }
+
         public override void StartPre(ICoreAPI api)
         {
             base.StartPre(api);
             EnsureApiCache(api);
 
-            if (api.ModLoader.IsModEnabled("configureeverything")) harmony?.PatchCategory("configureeverything");
+            TryCompatibilityPatch(harmony, api, "configureeverything");
 
-            if (Config == null)
+            EnsureConfigLoaded(api);
+
+            if(api.Side == EnumAppSide.Client && Config.ConfigLibWindowImprovements)
             {
                 try
                 {
-                    Config = api.LoadModConfig<ModConfig>(ConfigName) ?? new();
-                    api.StoreModConfig(Config, ConfigName); //Save just in case new fields where initialized
-                    Config = AutoConfigGenerator.RegisterOrCollectConfigFile(api, ConfigName, Config);
+                    harmony?.PatchCategory("ConfigLibWindowImprovements");
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
-                    api.Logger.Error($"Failed to load {ConfigName} using default, exception: {ex}");
-                    Config = new();
+                    Mod.Logger.Error("Failed patching ConfigLibWindowImprovements, exception: {0}", ex);
                 }
             }
-            if(api.Side == EnumAppSide.Client && Config.ConfigLibWindowImprovements) harmony?.PatchCategory("ConfigLibWindowImprovements");
 
             //TODO: maybe allow for localizing config into world settings
+        }
+
+        private void TryCompatibilityPatch(Harmony harmony, ICoreAPI api, string modid)
+        {
+            if(harmony is null) return;
+            try
+            {
+                if (api.ModLoader.IsModEnabled(modid))
+                {
+                    harmony.PatchCategory(modid);
+                }
+            }
+            catch(Exception ex)
+            {
+                Mod.Logger.Error("Failed to do compatibility patch with '{0}', exception: {1}", modid, ex);
+            }
         }
 
         public override void StartClientSide(ICoreClientAPI api)

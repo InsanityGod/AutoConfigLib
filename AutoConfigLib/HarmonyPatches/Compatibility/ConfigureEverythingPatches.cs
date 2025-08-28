@@ -19,7 +19,6 @@ namespace AutoConfigLib.HarmonyPatches.Compatibility
         {
             yield return AccessTools.Method(typeof(Core), nameof(Core.StartPre));
             yield return AccessTools.Method(typeof(Core), nameof(Core.AssetsFinalize));
-            yield return AccessTools.Method(typeof(ConfigureEverything.HarmonyPatches.HarmonyPatches), "PatchAll");
         }
 
         [HarmonyTranspiler]

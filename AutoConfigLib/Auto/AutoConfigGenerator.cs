@@ -13,10 +13,12 @@ namespace AutoConfigLib.Auto
 
         public static T RegisterOrCollectConfigFile<T>(ICoreAPI api, string configPath, T configValue)
         {
-            if(AutoConfigLibModSystem.Config == null)
+            AutoConfigLibModSystem.EnsureConfigLoaded(api);
+            
+            if(AutoConfigLibModSystem.Config is null)
             {
-                //Safety check, if this is called before AutoConfigLib is started, just return the value (should not be needed since I adjusted execution order but better safe then sorry)
-                api.Logger.Error($"AutoConfigLib could not create auto config for `{configPath}` because they requested config before AutoConfigLib was started");
+                //This shouldn't be possible anymore but I left it just in case
+                api.Logger.Error("AutoConfigLib could not create auto config for '{0}' because they requested config before AutoConfigLib was started", configPath);
                 return configValue;
             }
 
@@ -26,11 +28,11 @@ namespace AutoConfigLib.Auto
 
             if (FoundConfigsByPath.TryGetValue(configPath, out var config))
             {
-            if(config.Type != typeof(T))
-            {
-                api.Logger.Warning("[AutoConfigLib] A mod attempted to load the same config file but with a different type, config might not work propperly: '{0}' -> {1} != {2}", configPath, config.Type.FullName, typeof(T).FullName);
-                return configValue;
-            }
+                if(config.Type != typeof(T))
+                {
+                    api.Logger.Warning("[AutoConfigLib] A mod attempted to load the same config file but with a different type, config might not work propperly: '{0}' -> {1} != {2}", configPath, config.Type.FullName, typeof(T).FullName);
+                    return configValue;
+                }
 
                 //TODO: see if there is a better way to get matching mod
                 config.Mod ??= api.ModLoader.Mods.FirstOrDefault(mod => mod.Systems.FirstOrDefault()?.GetType().Assembly == config.Type.Assembly);
