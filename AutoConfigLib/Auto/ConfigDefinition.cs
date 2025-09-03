@@ -62,6 +62,7 @@ namespace AutoConfigLib.Auto
 
         public void Save(ICoreAPI api)
         {
+            if(PrimaryValue is null) return;
             if (IsLocalized)
             {
                 AutoConfigLibModSystem.CoreServerAPI?.World.Config.GetOrAddTreeAttribute("autoconfiglib").SetString(ConfigPath, JsonConvert.SerializeObject(PrimaryValue, Formatting.None));
