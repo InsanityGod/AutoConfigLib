@@ -1,89 +1,141 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	  
-	  
-    <!-- Nuget -->
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <PackageOutputPath>$(SolutionDir)Releases</PackageOutputPath>
+	<PropertyGroup>
+		<!-- Path to your ModInfo file -->
+		<ModInfoFile>modinfo.json</ModInfoFile>
+	</PropertyGroup>
 
-	  <PackageId>TheInsanityGod.VintageStory.$(MSBuildProjectName)</PackageId>
-	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <IncludeSymbols>True</IncludeSymbols>
-	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<Target Name="ReadModInfo" BeforeTargets="BeforeBuild">
 
-	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
-	  <Version>2.0.9</Version>
-	  <PackageVersion>2.0.9</PackageVersion>
-  </PropertyGroup>
+		<!-- Read mod id -->
+		<JsonPeek ContentPath="$(ModInfoFile)" Query="$.modid">
+			<Output TaskParameter="Result" PropertyName="ModIDFromJson" />
+		</JsonPeek>
 
-  <ItemGroup>
-    <Reference Include="configlib">
-      <HintPath>..\..\Dep\configlib_1.4.1\configlib.dll</HintPath>
-      <Private>false</Private>
-	</Reference>
-    <Reference Include="ConfigureEverything">
-      <HintPath>..\..\Dep\ConfigureEverything-v2.2.0\ConfigureEverything.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>..\..\Dep\vsimgui_1.1.7\ImGui.NET.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="VintagestoryAPI">
-      <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="VSSurvivalMod">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="VSEssentials">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSEssentials.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="VSCreativeMod">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSCreativeMod.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(VINTAGE_STORY)/Lib/Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="0Harmony">
-      <HintPath>$(VINTAGE_STORY)/Lib/0Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>$(VINTAGE_STORY)/Lib/Mono.Cecil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="VintagestoryLib">
-      <HintPath>$(VINTAGE_STORY)/VintagestoryLib.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="protobuf-net">
-      <HintPath>$(VINTAGE_STORY)/Lib/protobuf-net.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="cairo-sharp">
-      <HintPath>$(VINTAGE_STORY)/Lib/cairo-sharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Data.Sqlite">
-      <HintPath>$(VINTAGE_STORY)/Lib/Microsoft.Data.Sqlite.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
+		<!-- Read mod name -->
+		<JsonPeek ContentPath="$(ModInfoFile)" Query="$.name">
+			<Output TaskParameter="Result" PropertyName="ModNameFromJson" />
+		</JsonPeek>
 
-<ItemGroup>
-  <Content Include="modinfo.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </Content>
-</ItemGroup>
+		<!-- Read description -->
+		<JsonPeek ContentPath="$(ModInfoFile)" Query="$.description">
+			<Output TaskParameter="Result" PropertyName="DescriptionFromJson" />
+		</JsonPeek>
+
+		<!-- Read authors -->
+		<JsonPeek ContentPath="$(ModInfoFile)" Query="$.authors[*]">
+			<Output TaskParameter="Result" PropertyName="AuthorsFromJson" />
+		</JsonPeek>
+
+		<!-- Read version -->
+		<JsonPeek ContentPath="$(ModInfoFile)" Query="$.version">
+			<Output TaskParameter="Result" PropertyName="VersionFromJson" />
+		</JsonPeek>
+
+		<!-- Set all relevant properties -->
+		<PropertyGroup>
+			<ModID>$(ModIDFromJson)</ModID>
+			<Title>$(ModNameFromJson)</Title>
+			<Description>$(DescriptionFromJson)</Description>
+			<Authors>$(AuthorsFromJson)</Authors>
+			<Version>$(VersionFromJson)</Version>
+			<PackageVersion>$(VersionFromJson)</PackageVersion>
+
+			<HasInsanityLibDependency>*</HasInsanityLibDependency>
+		</PropertyGroup>
+	</Target>
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+
+
+		<!-- Nuget -->
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageOutputPath>$(SolutionDir)Releases</PackageOutputPath>
+
+		<PackageId>TheInsanityGod.VintageStory.$(MSBuildProjectName)</PackageId>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<IncludeSymbols>True</IncludeSymbols>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://mods.vintagestory.at/autoconfiglib</PackageProjectUrl>
+
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<Version>2.0.9</Version>
+		<PackageVersion>2.0.9</PackageVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="JsonPeek" Version="1.2.0" />
+		<Reference Include="configlib">
+			<HintPath>..\..\Dep\configlib_1.4.1\configlib.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ConfigureEverything">
+			<HintPath>..\..\Dep\ConfigureEverything-v2.2.0\ConfigureEverything.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ImGui.NET">
+			<HintPath>..\..\Dep\vsimgui_1.1.7\ImGui.NET.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="VintagestoryAPI">
+			<HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="VSSurvivalMod">
+			<HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="VSEssentials">
+			<HintPath>$(VINTAGE_STORY)/Mods/VSEssentials.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="VSCreativeMod">
+			<HintPath>$(VINTAGE_STORY)/Mods/VSCreativeMod.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(VINTAGE_STORY)/Lib/Newtonsoft.Json.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="0Harmony">
+			<HintPath>$(VINTAGE_STORY)/Lib/0Harmony.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Mono.Cecil">
+			<HintPath>$(VINTAGE_STORY)/Lib/Mono.Cecil.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="VintagestoryLib">
+			<HintPath>$(VINTAGE_STORY)/VintagestoryLib.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="protobuf-net">
+			<HintPath>$(VINTAGE_STORY)/Lib/protobuf-net.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="cairo-sharp">
+			<HintPath>$(VINTAGE_STORY)/Lib/cairo-sharp.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Microsoft.Data.Sqlite">
+			<HintPath>$(VINTAGE_STORY)/Lib/Microsoft.Data.Sqlite.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="modinfo.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>False</Pack>
+		</Content>
+		<None Include="..\LICENSE.txt" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest"/>
+		<None Include="..\README.md" Pack="true" PackagePath="" CopyToOutputDirectory="Never" />
+	</ItemGroup>
 
 </Project>
