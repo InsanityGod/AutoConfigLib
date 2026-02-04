@@ -5,6 +5,20 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	  
+	  
+    <!-- Nuget -->
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <PackageOutputPath>$(SolutionDir)Releases</PackageOutputPath>
+
+	  <PackageId>TheInsanityGod.VintageStory.$(MSBuildProjectName)</PackageId>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <IncludeSymbols>True</IncludeSymbols>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+	  <Version>2.0.9</Version>
+	  <PackageVersion>2.0.9</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
