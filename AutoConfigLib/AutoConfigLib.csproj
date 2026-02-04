@@ -63,6 +63,7 @@
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://mods.vintagestory.at/autoconfiglib</PackageProjectUrl>
+		<PackageTags>VintageStory, Modding, C#</PackageTags>
 
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<Version>2.0.9</Version>
