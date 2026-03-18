@@ -12,35 +12,31 @@ namespace AutoConfigLib.HarmonyPatches
     [HarmonyPatch]
     public static class TheHarmonyHarmonyPatch
     {
+        [HarmonyTargetMethods]
         static IEnumerable<MethodBase> TargetMethods()
         {
-            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAll), new Type[] { });
-            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchCategory), new Type[] { typeof(string) });
-            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAllUncategorized), new Type[] { });
+            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAll));
+            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchCategory), [typeof(string)]);
+            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAllUncategorized));
         }
 
+        [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var codes = instructions.ToList();
-            var getFrameMethod = AccessTools.Method(typeof(StackFrame), nameof(StackFrame.GetMethod));
+            var matcher = new CodeMatcher(instructions);
+            matcher.Start().MatchStartForward(
+                CodeMatch.Calls(AccessTools.Method(typeof(StackFrame), nameof(StackFrame.GetMethod)))
+            );
+            matcher.Opcode = OpCodes.Call;
+            matcher.Operand = AccessTools.Method(typeof(TheHarmonyHarmonyPatch), nameof(GetNonPatchedMethodFromFrame));
 
-            for ( var i = 0; i < codes.Count; i++)
-            {
-                var code = codes[i];
-                if (code.Calls(getFrameMethod))
-                {
-                    code.opcode = OpCodes.Call;
-                    code.operand = AccessTools.Method(typeof(TheHarmonyHarmonyPatch), nameof(GetNonPatchedMethodFromFrame));
-                }
-            }
-
-            return codes;
+            return matcher.InstructionEnumeration();
         }
 
         public static MethodBase GetNonPatchedMethodFromFrame(StackFrame frame)
         {
             var normalResult = frame.GetMethod();
-            if(normalResult.ReflectedType == null)
+            if(normalResult.ReflectedType is null)
             {
                 var nonHarmonyResult = Harmony.GetOriginalMethodFromStackframe(frame);
                 return nonHarmonyResult;

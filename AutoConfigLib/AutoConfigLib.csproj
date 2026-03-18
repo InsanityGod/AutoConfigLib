@@ -54,7 +54,7 @@
 
 		<!-- Nuget -->
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageOutputPath>$(SolutionDir)Releases</PackageOutputPath>
+		<PackageOutputPath>$(SolutionDir)/../Releases</PackageOutputPath>
 
 		<PackageId>TheInsanityGod.VintageStory.$(MSBuildProjectName)</PackageId>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
