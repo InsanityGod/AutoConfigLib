@@ -135,7 +135,7 @@ namespace AutoConfigLib
 
         public override void Dispose()
         {
-            harmony?.UnpatchAll();
+            harmony?.UnpatchAll(Mod.Info.ModID);
             AutoConfigGenerator.FoundConfigsByPath = null;
             Renderer.CachedRenderesByType = null;
             AttributeHelper.CustomProviders.Clear();

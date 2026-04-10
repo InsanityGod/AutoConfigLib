@@ -87,11 +87,5 @@ namespace AutoConfigLib.Config
         [Browsable(true)]
         [Description("Will invalidate the renderer cache, so it can re-initialize renders")]
         public static void ClearRenderCache() => Renderer.ClearCache();
-
-        [Browsable(true)]
-        [DisplayName("Do Not Touch (1)")]
-        [Description("Can you resist the big red button?")]
-        [Category("Dangerous But Fun")]
-        private static void DoNotTouch1() => DoNotTouchThis.Touch_1();
     }
 }
