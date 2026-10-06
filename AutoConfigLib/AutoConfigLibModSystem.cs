@@ -141,7 +141,6 @@ namespace AutoConfigLib
             AttributeHelper.CustomProviders.Clear();
             Config = null;
 
-            DoNotTouchThis.Touched_1 = false;
             base.Dispose();
         }
     }
