@@ -27,7 +27,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
                     ImGui.InputFloat(id, ref instance, 0, 0, fieldDefinition?.FormatString);
                     instance /= 100;
                 }
-                else ImGui.InputFloat($"{fieldDefinition?.Name}##{id}", ref instance, 0, 0, fieldDefinition?.FormatString);
+                else ImGui.InputFloat($"{fieldDefinition?.Name}##{id}", ref instance, 0, 0, fieldDefinition?.FormatString ?? "%.7g");
             }
 
             if(fieldDefinition?.RangeMin != null) instance = Math.Max(instance, (float)fieldDefinition.RangeMin);

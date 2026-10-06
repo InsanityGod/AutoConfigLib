@@ -8,7 +8,7 @@ namespace AutoConfigLib.Auto.Rendering.Renderers.ValueTypes
         public override void RenderValue(ref double instance, string id, FieldRenderDefinition fieldDefinition = null)
         {
             id = $"{fieldDefinition?.Name}##{id}";
-            ImGui.InputDouble($"{fieldDefinition?.Name}##{id}", ref instance);
+            ImGui.InputDouble($"{fieldDefinition?.Name}##{id}", ref instance, 0, 0, fieldDefinition?.FormatString ?? "%.15g");
             //TODO: maybe an option to use float sliders on double fields
 
             if(fieldDefinition?.RangeMin != null) instance = Math.Max(instance, (double)fieldDefinition.RangeMin);
