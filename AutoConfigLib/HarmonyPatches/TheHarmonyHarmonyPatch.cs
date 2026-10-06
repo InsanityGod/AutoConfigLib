@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -15,9 +13,9 @@ namespace AutoConfigLib.HarmonyPatches
         [HarmonyTargetMethods]
         static IEnumerable<MethodBase> TargetMethods()
         {
-            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAll));
+            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAll), []);
             yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchCategory), [typeof(string)]);
-            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAllUncategorized));
+            yield return AccessTools.Method(typeof(Harmony), nameof(Harmony.PatchAllUncategorized), []);
         }
 
         [HarmonyTranspiler]
